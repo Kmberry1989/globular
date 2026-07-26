@@ -1,41 +1,58 @@
-Globular Roam — Local run & smoke-test
+# Globular Roam — First Orbit
 
-Quick start
+A mobile-first cozy photography expedition built with Vite and Three.js.
 
-1. Start a simple static server from the project root:
+Travel around a seamless tiny planet, photograph wildlife, gather natural treasures, help four local rangers, fill a persistent field guide, and return home after earning every biome stamp.
+
+## Run locally
 
 ```bash
-# Python 3
-python3 -m http.server 8000
+npm install
+npm run dev
 ```
 
-2. Open the game in your browser:
+Open the local address shown by Vite.
 
-http://localhost:8000/index.html
+## Controls
 
-Quick smoke-test checklist
+- Move: thumbstick, WASD, or arrow keys
+- Camera: on-screen camera button or `C`
+- Photograph: shutter button or `Space`
+- Interact/gather: context button or `E`
+- Field guide: book button or `G`
+- Full screen: utility button or `F`
+- Exit camera/full screen: `Esc`
 
-- Confirm the globe renders and the player avatar appears at the North pole.
-- Use the on-screen joystick (or mouse drag) to move the globe — verify player movement direction is intuitive.
-- Walk into nearby entities and confirm items collect (floating text appears, inventory updates).
-- Open shops by approaching a `shop` entity — confirm NPC greeting appears in the shop modal.
-- Approach coins — verify coins rotate, bob, and pickup awards `bells` and shows floating coin text.
-- Find flamingos, monkeys, koalas, felines, foxes and observe animations and occasional sounds.
-- Press `F` near water to open fishing modal and test casting.
+## Expedition route
 
-Developer notes
+1. Clover Commons — photograph a meadow butterfly and gather two starflowers.
+2. Sunpetal Sands — photograph the dune camel and gather a sunpetal.
+3. Frostcap Reach — photograph a penguin and a polar bear.
+4. Goldenleaf Wilds — photograph a zebra, giraffe, and elephant.
+5. Return to Mira in Clover Commons to complete First Orbit.
 
-- Main file: `index.html` (single-file app: HTML + CSS + JS)
-- Important symbols:
-  - `spawnProceduralEntity()` — entity spawn logic
-  - `updateWildlife(delta)` — per-entity animation behaviors
-  - `ITEM_TYPES`, `BIOMES`, `SHOP_NPCS` — content lists to edit
-  - `state` — central non-reactive game state
+Wildlife is recorded through photography and is never added to inventory. Fish and shoreline creatures remain photographable field-guide subjects; there is no fishing mechanic.
 
-Next recommended steps
+## Verification
 
-- Run the game locally and test interactions.
-- If frame drops appear on low-end hardware, I can add an entity cap and LOD.
-- Optional: replace procedural SFX tones with short audio files for richer sound.
+```bash
+npm run build
+npm run test:smoke
+```
 
-If you want, I can add a small performance cap (e.g., max 400 entities) and a UI toggle to limit spawns.
+The smoke test expects the Vite development server at `http://127.0.0.1:5173`. Override it with `GLOBULAR_ROAM_URL` if needed.
+
+The game exposes:
+
+- `window.render_game_to_text()` for concise, player-relevant state.
+- `window.advanceTime(ms)` for deterministic frame stepping.
+
+Browser artifacts are written under `output/playwright/first-orbit/`.
+
+## Project structure
+
+- `src/game.js` — Three.js world, movement, progression, interactions, and finale.
+- `src/photography.js` — viewfinder targeting and render-target photo capture.
+- `src/ui.js` — mobile HUD, dialogs, field guide, outfitter, and finale.
+- `src/content.js` — biomes, species, requests, collectibles, and cosmetics.
+- `src/persistence.js` — versioned saves and IndexedDB photo storage.
