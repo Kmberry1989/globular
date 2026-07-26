@@ -1,0 +1,87 @@
+{
+  "bodyParts": {
+    "head": [
+      "head_round",
+      "head_square",
+      "head_oval"
+    ],
+    "torso": [
+      "torso_default",
+      "torso_muscular",
+      "torso_slim"
+    ],
+    "lower": [
+      "lower_default",
+      "lower_shorts",
+      "lower_dress"
+    ]
+  },
+  "hair": [
+    "hair_short",
+    "hair_long",
+    "hair_curly",
+    "hair_spiky"
+  ],
+  "eyes": [
+    "eyes_normal",
+    "eyes_happy",
+    "eyes_sleepy",
+    "eyes_surprised"
+  ],
+  "accessories": [
+    {
+      "name": "hat_cap",
+      "type": "hat",
+      "locked": false,
+      "cost": 0
+    },
+    {
+      "name": "hat_tophat",
+      "type": "hat",
+      "locked": true,
+      "cost": 500
+    },
+    {
+      "name": "hat_crown",
+      "type": "hat",
+      "locked": true,
+      "cost": 1000
+    },
+    {
+      "name": "hat_beanie",
+      "type": "hat",
+      "locked": false,
+      "cost": 0
+    },
+    {
+      "name": "hat_cowboy",
+      "type": "hat",
+      "locked": true,
+      "cost": 800
+    },
+    {
+      "name": "umbrella_red",
+      "type": "carry",
+      "locked": true,
+      "cost": 400
+    },
+    {
+      "name": "umbrella_blue",
+      "type": "carry",
+      "locked": true,
+      "cost": 400
+    },
+    {
+      "name": "backpack_red",
+      "type": "carry",
+      "locked": true,
+      "cost": 600
+    },
+    {
+      "name": "backpack_green",
+      "type": "carry",
+      "locked": true,
+      "cost": 600
+    }
+  ]
+}

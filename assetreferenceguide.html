@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cozy Globe 3D | Asset Bible & Design System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
+        
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #fafaf9; /* Stone-50 */
+            color: #44403c; /* Stone-700 */
+        }
+
+        /* Responsive Chart Container Styles - MANDATORY */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+
+        .biome-card {
+            transition: all 0.3s ease;
+        }
+        .biome-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        
+        .asset-tag {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 700;
+        }
+    </style>
+    <!-- Chosen Palette: Cozy Stone & Warm Earth (Stone, Amber, Emerald, Sky, Rose) -->
+    <!-- Application Structure Plan: The application is designed as a "Digital Asset Bible" or Design System Dashboard. It is divided into three main sections: 
+         1. Ecosystem Overview: High-level metrics visualization to understand the scope of the game world (Charts).
+         2. The Biome Explorer: An interactive filtering system allowing users to drill down into specific wildlife and environment details per region.
+         3. Architecture & Atmosphere: A showcase of the static elements (structures, plants, effects) that define the "toy-box" aesthetic.
+         This structure prioritizes quick reference for developers/designers while maintaining the playful tone of the source report. -->
+    <!-- Visualization & Content Choices: 
+         1. Wildlife Distribution (Bar Chart): Compares species count across biomes to ensure gameplay balance. Interaction: Clicking bars filters the list.
+         2. Asset Composition (Doughnut Chart): Shows the ratio of Dynamic (Wildlife) vs Static (Structures/Plants) assets. 
+         3. Dynamic Cards: Used for individual assets to display their visual descriptions clearly without clutter. 
+         4. NO SVG/Mermaid used. Graphics rely on CSS shapes, Emojis, and Chart.js Canvas. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+</head>
+<body class="antialiased min-h-screen flex flex-col">
+
+    <!-- Navigation / Header -->
+    <header class="bg-white border-b-4 border-stone-200 sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-amber-400 rounded-lg flex items-center justify-center text-2xl shadow-inner">🌍</div>
+                <div>
+                    <h1 class="text-2xl font-extrabold text-stone-800 leading-none">Cozy Globe 3D</h1>
+                    <p class="text-xs font-bold text-stone-500 tracking-wider uppercase">Asset Reference Guide</p>
+                </div>
+            </div>
+            <div class="hidden md:flex gap-4 text-sm font-bold text-stone-600">
+                <a href="#overview" class="hover:text-amber-600 transition-colors">Overview</a>
+                <a href="#wildlife" class="hover:text-emerald-600 transition-colors">Wildlife</a>
+                <a href="#structures" class="hover:text-rose-600 transition-colors">Structures</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow container mx-auto px-4 py-8 space-y-12">
+
+        <!-- Intro Section -->
+        <section class="max-w-4xl mx-auto text-center space-y-4">
+            <h2 class="text-4xl font-black text-stone-800">The "Toy-Box" Aesthetic</h2>
+            <p class="text-lg text-stone-600 leading-relaxed">
+                Welcome to the official asset repository for <span class="font-bold text-amber-600">Cozy Globe 3D</span>. 
+                This guide documents the <strong>Upgraded Low Poly</strong> art style, characterized by "hinge" joint animations, 
+                smooth matte textures, and exaggerated features. Use this dashboard to explore the ecosystem, 
+                balance biome density, and reference visual descriptions for modeling.
+            </p>
+        </section>
+
+        <!-- Section 1: Ecosystem Overview (Charts) -->
+        <section id="overview" class="bg-white rounded-3xl p-6 shadow-sm border border-stone-100">
+            <div class="mb-6 border-l-4 border-amber-400 pl-4">
+                <h3 class="text-2xl font-bold text-stone-800">Ecosystem Metrics</h3>
+                <p class="text-stone-500">Quantitative analysis of the game's asset distribution. Use these charts to identify under-populated biomes or asset categories.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Chart 1: Wildlife per Biome -->
+                <div class="flex flex-col">
+                    <h4 class="text-center font-bold text-stone-600 mb-4">Wildlife Density by Biome</h4>
+                    <div class="bg-stone-50 rounded-2xl p-4 flex-grow flex items-center justify-center">
+                        <div class="chart-container">
+                            <canvas id="biomeChart"></canvas>
+                        </div>
+                    </div>
+                    <p class="text-xs text-center text-stone-400 mt-2">The Grassland biome currently contains the highest diversity of species.</p>
+                </div>
+
+                <!-- Chart 2: Asset Composition -->
+                <div class="flex flex-col">
+                    <h4 class="text-center font-bold text-stone-600 mb-4">Total Asset Composition</h4>
+                    <div class="bg-stone-50 rounded-2xl p-4 flex-grow flex items-center justify-center">
+                        <div class="chart-container">
+                            <canvas id="categoryChart"></canvas>
+                        </div>
+                    </div>
+                    <p class="text-xs text-center text-stone-400 mt-2">Visual breakdown of dynamic vs. static game objects.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: Biome Explorer (Interactive) -->
+        <section id="wildlife">
+            <div class="flex flex-col md:flex-row justify-between items-end mb-6 border-b border-stone-200 pb-4">
+                <div class="max-w-xl">
+                    <h3 class="text-3xl font-black text-stone-800 mb-2">Wildlife Explorer</h3>
+                    <p class="text-stone-600">
+                        Filter the database by biome to view specific creature descriptions. 
+                        Note the <span class="font-bold text-amber-600">"hinge" joint animation</span> requirement for all models.
+                    </p>
+                </div>
+                <!-- Filter Controls -->
+                <div class="flex flex-wrap gap-2 mt-4 md:mt-0" id="biomeFilters">
+                    <button class="filter-btn active px-4 py-2 rounded-full bg-stone-800 text-white font-bold text-sm shadow-md transition-all" data-filter="all">All</button>
+                    <button class="filter-btn px-4 py-2 rounded-full bg-stone-200 text-stone-600 font-bold text-sm hover:bg-emerald-100 hover:text-emerald-700 transition-all" data-filter="Grassland">🌿 Grassland</button>
+                    <button class="filter-btn px-4 py-2 rounded-full bg-stone-200 text-stone-600 font-bold text-sm hover:bg-sky-100 hover:text-sky-700 transition-all" data-filter="Snow">❄️ Snow</button>
+                    <button class="filter-btn px-4 py-2 rounded-full bg-stone-200 text-stone-600 font-bold text-sm hover:bg-orange-100 hover:text-orange-700 transition-all" data-filter="Desert">🌵 Desert</button>
+                    <button class="filter-btn px-4 py-2 rounded-full bg-stone-200 text-stone-600 font-bold text-sm hover:bg-yellow-100 hover:text-yellow-700 transition-all" data-filter="Safari">🦁 Safari</button>
+                    <button class="filter-btn px-4 py-2 rounded-full bg-stone-200 text-stone-600 font-bold text-sm hover:bg-blue-100 hover:text-blue-700 transition-all" data-filter="Aquatic">🌊 Aquatic</button>
+                    <button class="filter-btn px-4 py-2 rounded-full bg-stone-200 text-stone-600 font-bold text-sm hover:bg-purple-100 hover:text-purple-700 transition-all" data-filter="Birds">🦅 Air</button>
+                </div>
+            </div>
+
+            <!-- Dynamic Grid -->
+            <div id="wildlifeGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Content injected via JS -->
+            </div>
+        </section>
+
+        <!-- Section 3: Architecture & Atmosphere -->
+        <section id="structures" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- Structures Column -->
+            <div class="lg:col-span-2 space-y-6">
+                <div class="border-l-4 border-rose-400 pl-4 mb-4">
+                    <h3 class="text-2xl font-bold text-stone-800">Architecture & Structures</h3>
+                    <p class="text-stone-500">Buildings should resemble high-end wooden playsets with exaggerated features.</p>
+                </div>
+                <div id="structureGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Injected via JS -->
+                </div>
+            </div>
+
+            <!-- Environment/Plants Column -->
+            <div class="space-y-6">
+                <div class="border-l-4 border-emerald-400 pl-4 mb-4">
+                    <h3 class="text-2xl font-bold text-stone-800">Flora & Atmosphere</h3>
+                    <p class="text-stone-500">Clustered geometric foliage and weather effects.</p>
+                </div>
+                
+                <div class="bg-emerald-50 rounded-2xl p-6 border border-emerald-100">
+                    <h4 class="font-bold text-emerald-800 mb-3 flex items-center gap-2">
+                        <span>🌳</span> Flora
+                    </h4>
+                    <ul id="plantList" class="space-y-3">
+                        <!-- Injected via JS -->
+                    </ul>
+                </div>
+
+                <div class="bg-sky-50 rounded-2xl p-6 border border-sky-100">
+                    <h4 class="font-bold text-sky-800 mb-3 flex items-center gap-2">
+                        <span>☁️</span> Environment
+                    </h4>
+                    <ul id="envList" class="space-y-3">
+                        <!-- Injected via JS -->
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-stone-800 text-stone-300 py-8 mt-12">
+        <div class="container mx-auto px-4 text-center">
+            <p class="font-bold text-lg mb-2">Cozy Globe 3D</p>
+            <p class="text-sm opacity-60">Confidential Design Document • Generated from Source Report</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // --- DATA STORAGE ---
+        const gameData = {
+            wildlife: [
+                { name: "Red Panda", biome: "Grassland", desc: "Blocky, rusty-orange body with a massive, cylindrical striped tail. White accents on ears/muzzle." },
+                { name: "Rabbit", biome: "Grassland", desc: "Small white sphere with long, upright cylinder ears. Moves by hopping in short, quick arcs." },
+                { name: "Hedgehog", biome: "Grassland", desc: "Brown half-sphere covered in small, low-poly cones. Scuttles close to ground." },
+                { name: "Squirrel", biome: "Grassland", desc: "Tiny reddish-brown body with large S-shaped tail bigger than torso." },
+                { name: "Sheep", biome: "Grassland", desc: "Large fluffy white 'cloud' cluster body, tiny black stick legs." },
+                { name: "Cow", biome: "Grassland", desc: "Boxy white shape with black patches and small horns. Grazes frequently." },
+                { name: "Chicken", biome: "Grassland", desc: "Small white teardrop shape with red comb. Pecks at ground rhythmically." },
+                { name: "Deer", biome: "Grassland", desc: "Tan body with white spots and simple branching antler cylinders. High-step trot." },
+                { name: "Butterfly", biome: "Grassland", desc: "Oversized simple geometry, two flat pastel wing planes, tiny black cylinder body." },
+                { name: "Ladybug", biome: "Grassland", desc: "Shiny red semi-sphere with distinct black spots, crawling flat against ground." },
+                { name: "Arctic Fox", biome: "Snow", desc: "Sleek white rectangular body, bushy tail. Unique 'squash and stretch' pounce animation." },
+                { name: "Penguin", biome: "Snow", desc: "Simple black cylinder with white belly patch, tiny orange beak cone. Side-to-side wobble." },
+                { name: "Polar Bear", biome: "Snow", desc: "Bulky, large white block with a heavy, slow gait." },
+                { name: "Seal", biome: "Snow", desc: "Grey, sausage-shaped cylinder that scoots along ice on belly." },
+                { name: "Walrus", biome: "Snow", desc: "Larger brown seal-like shape with distinct white tusk cones pointing down." },
+                { name: "Moose", biome: "Snow", desc: "Very tall, dark brown body with massive flat 'paddle' antlers." },
+                { name: "Snowy Owl", biome: "Snow", desc: "Round white sphere with yellow eyes, perched on trees or rocks." },
+                { name: "Camel", biome: "Desert", desc: "Tan, lumpy silhouette with distinct single hump. Moves slowly and deliberately." },
+                { name: "Fennec Fox", biome: "Desert", desc: "Tiny cream-colored body with enormously oversized triangular ears." },
+                { name: "Lizard", biome: "Desert", desc: "Bright green flat rectangle with long tail that wiggles in sine-wave motion." },
+                { name: "Scorpion", biome: "Desert", desc: "Small black/brown creature with distinct curled tail and pincers." },
+                { name: "Snake", biome: "Desert", desc: "Chain of small cylinders slithering in S-shape across sand." },
+                { name: "Elephant", biome: "Safari", desc: "Large grey boxy shape with long curved trunk cylinder and wide flat ears." },
+                { name: "Giraffe", biome: "Safari", desc: "Very long vertical neck cylinder, spotted orange/yellow coat." },
+                { name: "Zebra", biome: "Safari", desc: "White body with high-contrast black stripes (texture or geometry strips)." },
+                { name: "Ostrich", biome: "Safari", desc: "Round feathery body on spindly legs, long neck bobs rhythmically." },
+                { name: "Lion", biome: "Safari", desc: "Golden-yellow blocky body, mane represented by ring of brown spheres." },
+                { name: "Rhino", biome: "Safari", desc: "Heavy grey tank-like shape with two horns on snout." },
+                { name: "Hippo", biome: "Safari", desc: "Purple-grey rounded rectangle, often near water. Opens mouth wide." },
+                { name: "Flamingo", biome: "Safari", desc: "Bright pink sphere body on incredibly thin stick legs. Stands on one leg." },
+                { name: "Meerkat", biome: "Safari", desc: "Tiny upright cylinder that pops up and rotates head to scan." },
+                { name: "Dolphin", biome: "Aquatic", desc: "Sleek arched blue cylinder with dorsal fin. Moves by 'porpoising' arcs." },
+                { name: "River Crab", biome: "Aquatic", desc: "Wide flat red box with pincers, moves exclusively sideways along banks." },
+                { name: "Whale", biome: "Aquatic", desc: "Massive blue block, stays submerged, rotates upward to 'breach'." },
+                { name: "Turtle", biome: "Aquatic", desc: "Green half-sphere shell with small head. Moves slowly." },
+                { name: "Duck", biome: "Aquatic", desc: "Simple mallard design (green head, brown body) bobs on water." },
+                { name: "Fish", biome: "Aquatic", desc: "Visible as white concentric ring ripples or small shadow silhouettes." },
+                { name: "Generic Bird", biome: "Birds", desc: "Minimalist V-shape geometry in white/grey, soaring in high circles." },
+                { name: "Eagle", biome: "Birds", desc: "Larger brown V-shape with white head, circling high altitudes." },
+                { name: "Parrot", biome: "Birds", desc: "Bright red/blue/green V-shape, flying lower near trees." },
+                { name: "Seagull", biome: "Birds", desc: "White M-shape wing geometry, found near water streams." }
+            ],
+            structures: [
+                { name: "Meadow Cottage", biome: "Grassland", desc: "White walls, steep chocolate-brown roof, teal door. Oversized chimney with puff smoke." },
+                { name: "Adobe Lookout", biome: "Desert", desc: "Stacked sand-colored rounded cubes, flat roof, dark brown ladder." },
+                { name: "Log Cabin", biome: "Snow", desc: "Horizontal dark brown logs, thick white snow-cap roof, transparent blue icicles." },
+                { name: "Stilt Hut", biome: "Safari", desc: "Circular straw-colored hut on four thick legs, conical thatched roof." },
+                { name: "Nook's Globe Shop", biome: "Unique", desc: "Central hub. Vibrant orange walls, dark roof, large white sign. Glowing yellow windows." },
+                { name: "Bridge", biome: "All", desc: "Simple arched wooden plank structure with low rails over blue streams." }
+            ],
+            plants: [
+                { name: "Fruit Tree", desc: "Thick tapered trunk, green sphere cluster leaves. Red (Apple) or Orange spheres." },
+                { name: "Berry Bush", desc: "Low cluster of green 'pill' shapes studded with purple/blue berry spheres." },
+                { name: "Flower", desc: "Single vertical stem topped with colorful disk or cone blossom." },
+                { name: "Cactus", desc: "Central green cylinder with 1-2 smaller branching cylinders (Saguaro shape)." },
+                { name: "Fern", desc: "Cluster of green cones pointing upward." },
+                { name: "Reeds/Cattails", desc: "Tall thin brown cylinders with thicker 'sausage' shape at top." }
+            ],
+            environment: [
+                { name: "Cloud", desc: "Puffy cluster of 5-7 white spheres. Drifts independently." },
+                { name: "Coin", desc: "Gold metallic cylinder spinning vertically. Emits 'double-ding' sound." },
+                { name: "Ice Patch", desc: "Flat, semi-transparent cyan disc on snow. High specular reflectivity." },
+                { name: "Water Stream", desc: "Continuous semi-transparent blue band with soft white edge." }
+            ]
+        };
+
+        // --- CHART INITIALIZATION ---
+        function initCharts() {
+            // Data Processing for Charts
+            const biomeCounts = {};
+            gameData.wildlife.forEach(w => {
+                biomeCounts[w.biome] = (biomeCounts[w.biome] || 0) + 1;
+            });
+
+            const assetCounts = {
+                'Wildlife': gameData.wildlife.length,
+                'Structures': gameData.structures.length,
+                'Flora': gameData.plants.length,
+                'Environment': gameData.environment.length
+            };
+
+            // Chart 1: Wildlife per Biome
+            const biomeCtx = document.getElementById('biomeChart').getContext('2d');
+            new Chart(biomeCtx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(biomeCounts),
+                    datasets: [{
+                        label: 'Species Count',
+                        data: Object.values(biomeCounts),
+                        backgroundColor: [
+                            '#86efac', // Grassland (green-300)
+                            '#e0f2fe', // Snow (sky-100)
+                            '#fed7aa', // Desert (orange-200)
+                            '#fde047', // Safari (yellow-300)
+                            '#67e8f9', // Aquatic (cyan-300)
+                            '#d8b4fe'  // Birds (purple-300)
+                        ],
+                        borderRadius: 8,
+                        borderSkipped: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { display: false } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+
+            // Chart 2: Asset Categories
+            const catCtx = document.getElementById('categoryChart').getContext('2d');
+            new Chart(catCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(assetCounts),
+                    datasets: [{
+                        data: Object.values(assetCounts),
+                        backgroundColor: ['#f59e0b', '#f43f5e', '#10b981', '#3b82f6'],
+                        borderWidth: 0,
+                        hoverOffset: 10
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } }
+                    }
+                }
+            });
+        }
+
+        // --- DOM MANIPULATION ---
+        
+        function getBiomeColor(biome) {
+            const colors = {
+                'Grassland': 'bg-emerald-100 text-emerald-800 border-emerald-200',
+                'Snow': 'bg-sky-50 text-sky-800 border-sky-200',
+                'Desert': 'bg-orange-50 text-orange-800 border-orange-200',
+                'Safari': 'bg-yellow-50 text-yellow-800 border-yellow-200',
+                'Aquatic': 'bg-blue-50 text-blue-800 border-blue-200',
+                'Birds': 'bg-purple-50 text-purple-800 border-purple-200',
+                'Unique': 'bg-stone-800 text-amber-400 border-stone-600',
+                'All': 'bg-stone-100 text-stone-600'
+            };
+            return colors[biome] || colors['All'];
+        }
+
+        function renderWildlife(filter = 'all') {
+            const grid = document.getElementById('wildlifeGrid');
+            grid.innerHTML = '';
+
+            const items = filter === 'all' 
+                ? gameData.wildlife 
+                : gameData.wildlife.filter(w => w.biome === filter);
+
+            items.forEach(animal => {
+                const card = document.createElement('div');
+                card.className = 'biome-card bg-white p-5 rounded-2xl border border-stone-100 flex flex-col gap-3';
+                
+                const biomeClass = getBiomeColor(animal.biome);
+                
+                card.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <h4 class="font-bold text-lg text-stone-800">${animal.name}</h4>
+                        <span class="${biomeClass} px-2 py-1 rounded-md text-xs font-bold uppercase tracking-wide">${animal.biome}</span>
+                    </div>
+                    <p class="text-sm text-stone-500 leading-relaxed">${animal.desc}</p>
+                    <div class="mt-auto pt-2 flex items-center gap-2 text-xs text-stone-400 font-bold">
+                        <span class="w-2 h-2 rounded-full bg-stone-300"></span>
+                        HINGE ANIMATION
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function renderStaticAssets() {
+            // Structures
+            const sGrid = document.getElementById('structureGrid');
+            gameData.structures.forEach(s => {
+                const card = document.createElement('div');
+                card.className = 'bg-white p-4 rounded-xl border-l-4 border-rose-400 shadow-sm';
+                card.innerHTML = `
+                    <div class="flex justify-between mb-2">
+                        <h5 class="font-bold text-stone-800">${s.name}</h5>
+                        <span class="text-xs text-rose-500 font-bold uppercase">${s.biome}</span>
+                    </div>
+                    <p class="text-xs text-stone-500">${s.desc}</p>
+                `;
+                sGrid.appendChild(card);
+            });
+
+            // Flora
+            const pList = document.getElementById('plantList');
+            gameData.plants.forEach(p => {
+                const li = document.createElement('li');
+                li.className = 'text-sm text-stone-600 border-b border-emerald-100 last:border-0 pb-2 last:pb-0';
+                li.innerHTML = `<span class="font-bold text-emerald-700">${p.name}:</span> ${p.desc}`;
+                pList.appendChild(li);
+            });
+
+            // Env
+            const eList = document.getElementById('envList');
+            gameData.environment.forEach(e => {
+                const li = document.createElement('li');
+                li.className = 'text-sm text-stone-600 border-b border-sky-100 last:border-0 pb-2 last:pb-0';
+                li.innerHTML = `<span class="font-bold text-sky-700">${e.name}:</span> ${e.desc}`;
+                eList.appendChild(li);
+            });
+        }
+
+        // --- EVENT LISTENERS ---
+        document.addEventListener('DOMContentLoaded', () => {
+            initCharts();
+            renderWildlife();
+            renderStaticAssets();
+
+            // Filter Buttons
+            const buttons = document.querySelectorAll('.filter-btn');
+            buttons.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    // Update Active State
+                    buttons.forEach(b => {
+                        b.classList.remove('bg-stone-800', 'text-white');
+                        b.classList.add('bg-stone-200', 'text-stone-600');
+                    });
+                    e.target.classList.remove('bg-stone-200', 'text-stone-600');
+                    e.target.classList.add('bg-stone-800', 'text-white');
+
+                    // Filter Logic
+                    renderWildlife(e.target.dataset.filter);
+                });
+            });
+        });
+
+    </script>
+</body>
+</html>
