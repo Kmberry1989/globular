@@ -7,9 +7,13 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test:smoke": "node output/playwright/vertical-slice.js"
+    "test": "npm run test:unit",
+    "test:unit": "node --test test/*.test.js",
+    "test:smoke": "node scripts/run-smoke.mjs",
+    "test:all": "npm run test:unit && npm run build && npm run test:smoke"
   },
   "dependencies": {
+    "archiver": "^8.0.0",
     "three": "^0.179.1"
   },
   "devDependencies": {

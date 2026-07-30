@@ -1,4 +1,5 @@
 import { BIOME_ORDER, BIOMES, COLLECTIBLES, COSMETICS, SPECIES, currentChapter } from './content.js';
+import { calculateInventoryValue, requirementProgress } from './progression.js';
 
 const iconForRequirement = (requirement) => (requirement.kind === 'photo' ? '📷' : '🤲');
 
@@ -87,6 +88,7 @@ export class GameUI {
 
           <nav class="utility-nav glass-card">
             <button id="outfitter-button" aria-label="Open outfitter">🎒<span>Outfitter</span></button>
+            <button id="settings-button" aria-label="Open settings">⚙️<span>Settings</span></button>
             <button id="fullscreen-button" aria-label="Toggle fullscreen">⛶<span>Full screen</span></button>
           </nav>
         </section>
@@ -142,6 +144,28 @@ export class GameUI {
           </div>
         </section>
 
+        <section id="settings-layer" class="modal-layer hidden">
+          <div class="settings-card paper-card" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+            <header>
+              <div><span class="eyebrow">Make roaming comfortable</span><h2 id="settings-title">Settings</h2></div>
+              <button id="settings-close" class="modal-close static" aria-label="Close settings">×</button>
+            </header>
+            <div class="settings-list">
+              <button id="sound-setting" class="setting-row" type="button" role="switch" aria-checked="true">
+                <span class="setting-icon" aria-hidden="true">🔊</span>
+                <span><strong>Sound</strong><small>Camera and expedition feedback</small></span>
+                <span id="sound-setting-value" class="setting-value">On</span>
+              </button>
+              <button id="motion-setting" class="setting-row" type="button" role="switch" aria-checked="false">
+                <span class="setting-icon" aria-hidden="true">🌿</span>
+                <span><strong>Reduced motion</strong><small>Calms movement, flashes, and transitions</small></span>
+                <span id="motion-setting-value" class="setting-value">Off</span>
+              </button>
+            </div>
+            <p class="settings-note">Changes are saved automatically for this expedition.</p>
+          </div>
+        </section>
+
         <section id="finale-layer" class="finale-layer hidden">
           <div class="finale-stars" aria-hidden="true">✦ · ✧ · ✦ · ✧ · ✦</div>
           <div class="finale-card paper-card">
@@ -155,7 +179,7 @@ export class GameUI {
           </div>
         </section>
 
-        <div id="toast" class="toast hidden"></div>
+        <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
       </main>
     `;
   }
@@ -165,12 +189,14 @@ export class GameUI {
       'canvas-mount', 'start-screen', 'player-name', 'start-button', 'continue-button', 'hud',
       'biome-emoji', 'biome-name', 'bells-count', 'objective-title', 'objective-list', 'stamp-row',
       'field-guide-button', 'joystick-base', 'joystick-knob', 'context-button', 'context-icon',
-      'context-label', 'camera-button', 'outfitter-button', 'fullscreen-button', 'camera-overlay',
+      'context-label', 'camera-button', 'outfitter-button', 'settings-button', 'fullscreen-button', 'camera-overlay',
       'camera-focus-label', 'reticle', 'camera-close', 'shutter-button', 'camera-flash',
       'photo-result', 'photo-preview', 'photo-result-kicker', 'photo-result-name', 'modal-layer',
       'modal-content', 'modal-action', 'modal-close', 'guide-layer', 'guide-close', 'guide-grid',
       'guide-progress', 'outfitter-layer', 'outfitter-close', 'inventory-summary', 'sell-button',
-      'cosmetic-list', 'finale-layer', 'finale-copy', 'finale-stamps', 'keep-roaming-button', 'toast',
+      'cosmetic-list', 'settings-layer', 'settings-close', 'sound-setting', 'sound-setting-value',
+      'motion-setting', 'motion-setting-value', 'finale-layer', 'finale-copy', 'finale-stamps',
+      'keep-roaming-button', 'toast',
     ];
     for (const id of ids) this[id] = document.getElementById(id);
   }
@@ -200,6 +226,16 @@ export class GameUI {
     this['outfitter-button'].addEventListener('click', () => this.callbacks.outfitter?.());
     this['outfitter-close'].addEventListener('click', () => this.hideOutfitter());
     this['sell-button'].addEventListener('click', () => this.callbacks.sell?.());
+    this['settings-button'].addEventListener('click', () => this.callbacks.settings?.());
+    this['settings-close'].addEventListener('click', () => this.hideSettings());
+    this['sound-setting'].addEventListener('click', () => {
+      const enabled = this['sound-setting'].getAttribute('aria-checked') !== 'true';
+      this.callbacks.settingChange?.('sound', enabled);
+    });
+    this['motion-setting'].addEventListener('click', () => {
+      const enabled = this['motion-setting'].getAttribute('aria-checked') !== 'true';
+      this.callbacks.settingChange?.('reducedMotion', enabled);
+    });
     this['fullscreen-button'].addEventListener('click', () => this.callbacks.fullscreen?.());
     this['modal-close'].addEventListener('click', () => this.closeDialog());
     this['modal-action'].addEventListener('click', () => {
@@ -278,6 +314,7 @@ export class GameUI {
       shirtButton.classList.add('active');
     }
     this['continue-button'].classList.toggle('hidden', !save.started);
+    this.applySettings(save.settings);
   }
 
   enterGame() {
@@ -300,9 +337,7 @@ export class GameUI {
         ? `${targetBiome.ranger.name}’s request`
         : `Travel to ${targetBiome.name}`;
       this['objective-list'].innerHTML = targetBiome.requirements.map((requirement) => {
-        const amount = requirement.kind === 'photo'
-          ? Number(Boolean(save.discoveries[requirement.target]))
-          : (save.lifetimeCollected[requirement.target] || 0);
+        const amount = requirementProgress(save, requirement);
         const done = amount >= requirement.count;
         return `<div class="${done ? 'done' : ''}"><span>${done ? '✓' : iconForRequirement(requirement)}</span><span>${requirement.label}</span></div>`;
       }).join('');
@@ -323,6 +358,7 @@ export class GameUI {
   setCameraMode(active) {
     this['camera-overlay'].classList.toggle('hidden', !active);
     this.hud.classList.toggle('camera-hidden', active);
+    document.documentElement.classList.toggle('camera-active', active);
     if (!active) this.setCameraFocus(null);
   }
 
@@ -339,6 +375,7 @@ export class GameUI {
   }
 
   flash() {
+    if (this.reducedMotion) return;
     this['camera-flash'].classList.remove('flash');
     void this['camera-flash'].offsetWidth;
     this['camera-flash'].classList.add('flash');
@@ -408,7 +445,7 @@ export class GameUI {
   showOutfitter(save) {
     this['outfitter-layer'].classList.remove('hidden');
     const inventory = Object.entries(save.inventory).filter(([, count]) => count > 0);
-    const total = inventory.reduce((sum, [id, count]) => sum + COLLECTIBLES[id].value * count, 0);
+    const total = calculateInventoryValue(save.inventory, COLLECTIBLES);
     this['inventory-summary'].innerHTML = inventory.length
       ? inventory.map(([id, count]) => `<span>${COLLECTIBLES[id].emoji} ${COLLECTIBLES[id].name} ×${count}</span>`).join('') + `<strong>Worth ${total} bells</strong>`
       : '<span>Your gathering pouch is empty.</span>';
@@ -430,6 +467,32 @@ export class GameUI {
   hideOutfitter() {
     this['outfitter-layer'].classList.add('hidden');
     this.callbacks.modalClosed?.();
+  }
+
+  applySettings(settings = {}) {
+    this.reducedMotion = Boolean(settings.reducedMotion);
+    document.documentElement.classList.toggle('reduced-motion', this.reducedMotion);
+  }
+
+  updateSettingsPanel(settings) {
+    const soundEnabled = Boolean(settings.sound);
+    const motionReduced = Boolean(settings.reducedMotion);
+    this['sound-setting'].setAttribute('aria-checked', String(soundEnabled));
+    this['sound-setting-value'].textContent = soundEnabled ? 'On' : 'Off';
+    this['motion-setting'].setAttribute('aria-checked', String(motionReduced));
+    this['motion-setting-value'].textContent = motionReduced ? 'On' : 'Off';
+  }
+
+  showSettings(save) {
+    this.updateSettingsPanel(save.settings);
+    this['settings-layer'].classList.remove('hidden');
+    this['settings-close'].focus({ preventScroll: true });
+  }
+
+  hideSettings() {
+    this['settings-layer'].classList.add('hidden');
+    this.callbacks.modalClosed?.();
+    this['settings-button'].focus({ preventScroll: true });
   }
 
   showFinale(save) {

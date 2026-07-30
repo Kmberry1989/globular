@@ -182,7 +182,43 @@ await mobilePage.screenshot({ path: path.join(outputDir, '07-mobile-roaming.png'
 const cameraBox = await mobilePage.locator('#camera-button').boundingBox();
 await mobilePage.touchscreen.tap(cameraBox.x + cameraBox.width / 2, cameraBox.y + cameraBox.height / 2);
 await mobilePage.waitForSelector('#camera-overlay:not(.hidden)');
+const mobileViewport = mobilePage.viewportSize();
+const shutterBox = await mobilePage.locator('#shutter-button').boundingBox();
+const cameraCloseBox = await mobilePage.locator('#camera-close').boundingBox();
+await mobilePage.evaluate(() => window.globularRoam.ui.toastMessage('Camera notice layout check'));
+await mobilePage.waitForSelector('#toast:not(.hidden)');
+const toastBox = await mobilePage.locator('#toast:not(.hidden)').boundingBox();
+const insideViewport = (box) => box
+  && box.x >= 0
+  && box.y >= 0
+  && box.x + box.width <= mobileViewport.width
+  && box.y + box.height <= mobileViewport.height;
+const overlaps = (first, second) => first
+  && second
+  && first.x < second.x + second.width
+  && first.x + first.width > second.x
+  && first.y < second.y + second.height
+  && first.y + first.height > second.y;
+assert.equal(insideViewport(shutterBox), true, 'mobile shutter should remain fully inside the viewport');
+assert.equal(insideViewport(cameraCloseBox), true, 'mobile camera close should remain fully inside the viewport');
+assert.equal(overlaps(toastBox, shutterBox), false, 'camera notices must not cover the mobile shutter');
 await mobilePage.screenshot({ path: path.join(outputDir, '08-mobile-camera.png'), fullPage: true });
+await mobilePage.locator('#camera-close').evaluate((element) => element.click());
+await mobilePage.locator('#settings-button').evaluate((element) => element.click());
+await mobilePage.waitForSelector('#settings-layer:not(.hidden)');
+await mobilePage.locator('#sound-setting').evaluate((element) => element.click());
+await mobilePage.locator('#motion-setting').evaluate((element) => element.click());
+const mobileSettings = JSON.parse(await mobilePage.evaluate(() => window.render_game_to_text()));
+assert.deepEqual(mobileSettings.settings, { sound: false, reducedMotion: true });
+assert.equal(await mobilePage.locator('#sound-setting').getAttribute('aria-checked'), 'false');
+assert.equal(await mobilePage.locator('#motion-setting').getAttribute('aria-checked'), 'true');
+assert.equal(await mobilePage.evaluate(() => document.documentElement.classList.contains('reduced-motion')), true);
+await mobilePage.screenshot({ path: path.join(outputDir, '09-mobile-settings.png'), fullPage: true });
+await mobilePage.reload({ waitUntil: 'networkidle' });
+await mobilePage.locator('#continue-button').evaluate((element) => element.click());
+await mobilePage.waitForTimeout(150);
+const restoredMobileSettings = JSON.parse(await mobilePage.evaluate(() => window.render_game_to_text()));
+assert.deepEqual(restoredMobileSettings.settings, { sound: false, reducedMotion: true });
 await mobileContext.close();
 
 if (errors.length) {

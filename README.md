@@ -20,6 +20,7 @@ Open the local address shown by Vite.
 - Photograph: shutter button or `Space`
 - Interact/gather: context button or `E`
 - Field guide: book button or `G`
+- Settings: gear button
 - Full screen: utility button or `F`
 - Exit camera/full screen: `Esc`
 
@@ -36,11 +37,22 @@ Wildlife is recorded through photography and is never added to inventory. Fish a
 ## Verification
 
 ```bash
+npm run test:unit
 npm run build
 npm run test:smoke
 ```
 
-The smoke test expects the Vite development server at `http://127.0.0.1:5173`. Override it with `GLOBULAR_ROAM_URL` if needed.
+`test:unit` covers content, progression, economy, and save sanitization without
+starting WebGL. The smoke command starts its own strict-port Vite server,
+completes the full expedition in Chromium, checks mobile controls and settings,
+then shuts the server down. Set `GLOBULAR_ROAM_URL` to test an already-running
+or deployed build instead.
+
+Run every local gate with:
+
+```bash
+npm run test:all
+```
 
 The game exposes:
 
@@ -53,6 +65,9 @@ Browser artifacts are written under `output/playwright/first-orbit/`.
 
 - `src/game.js` — Three.js world, movement, progression, interactions, and finale.
 - `src/photography.js` — viewfinder targeting and render-target photo capture.
+- `src/progression.js` — pure request progress and economy rules.
 - `src/ui.js` — mobile HUD, dialogs, field guide, outfitter, and finale.
 - `src/content.js` — biomes, species, requests, collectibles, and cosmetics.
 - `src/persistence.js` — versioned saves and IndexedDB photo storage.
+- `test/` — fast content, progression, economy, and save tests.
+- `.github/workflows/ci.yml` — clean-checkout build and browser verification.

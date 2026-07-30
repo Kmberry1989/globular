@@ -4,4 +4,5 @@ dist/
 output/playwright/*.png
 output/playwright/*.json
 output/playwright/*.log
+output/playwright/web-game-client*/
 output/web-game/

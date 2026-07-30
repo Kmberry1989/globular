@@ -18,6 +18,7 @@ import {
   storePhoto,
 } from './persistence.js';
 import { PhotographySystem } from './photography.js';
+import { calculateInventoryValue, isBiomeRequestComplete } from './progression.js';
 
 const cameraSoundUrl = new URL('../sounds/camera.wav', import.meta.url).href;
 const GLOBE_RADIUS = 28;
@@ -576,6 +577,8 @@ export class GlobularRoamGame {
       context: () => this.performContextAction(),
       fieldGuide: () => this.openFieldGuide(),
       outfitter: () => this.openOutfitter(),
+      settings: () => this.openSettings(),
+      settingChange: (key, enabled) => this.updateSetting(key, enabled),
       sell: () => this.sellInventory(),
       cosmetic: (id) => this.buyOrEquipCosmetic(id),
       fullscreen: () => this.toggleFullscreen(),
@@ -611,6 +614,7 @@ export class GlobularRoamGame {
       this.player.removeFromParent();
       this.player = makePlayer(this.save);
       this.scene.add(this.player);
+      this.ui.applySettings(this.save.settings);
     }
     this.save.started = true;
     this.save = saveProgress(this.save);
@@ -712,11 +716,22 @@ export class GlobularRoamGame {
     this.ui.showOutfitter(this.save);
   }
 
+  openSettings() {
+    if (this.mode !== 'roaming') return;
+    this.mode = 'modal';
+    this.ui.showSettings(this.save);
+  }
+
+  updateSetting(key, enabled) {
+    if (!['sound', 'reducedMotion'].includes(key)) return;
+    this.save.settings[key] = Boolean(enabled);
+    this.ui.applySettings(this.save.settings);
+    this.persist();
+    this.ui.updateSettingsPanel(this.save.settings);
+  }
+
   sellInventory() {
-    let total = 0;
-    for (const [id, count] of Object.entries(this.save.inventory)) {
-      total += (COLLECTIBLES[id]?.value || 0) * count;
-    }
+    const total = calculateInventoryValue(this.save.inventory, COLLECTIBLES);
     if (!total) return;
     this.save.inventory = {};
     this.save.bells += total;
@@ -778,10 +793,7 @@ export class GlobularRoamGame {
     const chapter = currentChapter(this.save.stamps);
     if (chapter === 'return_home') return;
     const biome = BIOMES[chapter];
-    const complete = biome.requirements.every((requirement) => {
-      if (requirement.kind === 'photo') return Boolean(this.save.discoveries[requirement.target]);
-      return (this.save.lifetimeCollected[requirement.target] || 0) >= requirement.count;
-    });
+    const complete = isBiomeRequestComplete(this.save, biome);
     if (!complete) return;
     this.save.stamps.push(chapter);
     this.save.bells += 100;
@@ -839,7 +851,9 @@ export class GlobularRoamGame {
     this.save.latitude = THREE.MathUtils.clamp(this.save.latitude + y * MOVE_SPEED * delta, -LATITUDE_LIMIT, LATITUDE_LIMIT);
     this.updateGlobeOrientation();
     this.player.rotation.y = THREE.MathUtils.lerp(this.player.rotation.y, Math.atan2(x, y), 0.14);
-    this.player.position.y = Math.abs(Math.sin(this.elapsed * 8)) * 0.1;
+    this.player.position.y = this.save.settings.reducedMotion
+      ? 0
+      : Math.abs(Math.sin(this.elapsed * 8)) * 0.1;
     this.saveDirty = true;
   }
 
@@ -899,21 +913,22 @@ export class GlobularRoamGame {
   }
 
   updateWildlife(delta) {
+    const reducedMotion = this.save.settings.reducedMotion;
     for (const subject of this.wildlife) {
       subject.phase += delta;
-      const bob = Math.sin(subject.phase * 2.1) * 0.035;
+      const bob = reducedMotion ? 0 : Math.sin(subject.phase * 2.1) * 0.035;
       subject.animal.position.y = bob;
       const leftWing = subject.animal.getObjectByName('wing-left');
       const rightWing = subject.animal.getObjectByName('wing-right');
       if (leftWing && rightWing) {
-        leftWing.rotation.z = Math.sin(subject.phase * 7) * 0.5;
-        rightWing.rotation.z = -Math.sin(subject.phase * 7) * 0.5;
+        leftWing.rotation.z = reducedMotion ? 0 : Math.sin(subject.phase * 7) * 0.5;
+        rightWing.rotation.z = reducedMotion ? 0 : -Math.sin(subject.phase * 7) * 0.5;
       }
     }
     for (const collectible of this.collectibles) {
       if (collectible.collected) continue;
       collectible.phase += delta;
-      collectible.root.scale.setScalar(1 + Math.sin(collectible.phase * 2) * 0.035);
+      collectible.root.scale.setScalar(reducedMotion ? 1 : 1 + Math.sin(collectible.phase * 2) * 0.035);
     }
   }
 
@@ -954,8 +969,10 @@ export class GlobularRoamGame {
     this.updateAtmosphere();
     this.updateContext();
     this.updateBiome();
-    this.clouds.rotation.y += delta * 0.012;
-    this.stars.rotation.y -= delta * 0.002;
+    if (!this.save.settings.reducedMotion) {
+      this.clouds.rotation.y += delta * 0.012;
+      this.stars.rotation.y -= delta * 0.002;
+    }
     this.ui.updateHUD({ save: this.save, biomeId: this.currentBiome, context: this.mode === 'roaming' ? this.context : null });
     if (this.saveDirty && this.elapsed - (this.lastSaveAt || 0) > 2) this.persist();
   }
@@ -1060,6 +1077,7 @@ export class GlobularRoamGame {
         weather: this.atmosphere?.weather || 'breezy',
       },
       visibleWildlife: visible,
+      settings: { ...this.save.settings },
       bells: this.save.bells,
     });
   }

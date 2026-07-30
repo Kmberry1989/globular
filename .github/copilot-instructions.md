@@ -1,118 +1,96 @@
 # Copilot Instructions for Globular Roam
 
-## Project Overview
-**Cozy Globe 3D** is a single-file interactive 3D globe game built with Three.js and Tailwind CSS. Players explore procedurally-spawned biomes, collect items from diverse wildlife and vegetation, and trade treasures with NPCs for currency ("Bells").
+## Product
 
-**Key File:** `index.html` (634 lines, contains all HTML, CSS, and JavaScript)
+Globular Roam: First Orbit is a mobile-first cozy wildlife-photography game.
+Players travel around one seamless tiny planet, photograph wildlife, gather
+natural treasures, help four rangers, fill a persistent field guide, and return
+to Clover Commons for the finale.
 
-## Architecture & Core Systems
+Wildlife is photographed and never collected as inventory. Fish and shoreline
+animals are field-guide subjects; there is no fishing mechanic.
 
-### 1. Three.js Scene Structure
-- **Globe:** 50-unit radius sphere at world origin, textured with live sky gradient
-- **Player:** Red cylinder body positioned at north pole (0, GLOBE_RADIUS, 0), navigates via latitude/longitude (phi/theta)
-- **Atmosphere:** Rotating sun/moon orbit, star field, dynamic weather particles, lens flare effects
-- **Entities:** 160+ procedurally-spawned objects (trees, animals, NPCs, weather)
+The current product direction is documented in `DEVELOPMENT_PLAN.md`. Deepen the
+photography and wildlife-observation loop before adding more biomes, multiplayer,
+accounts, or backend systems.
 
-**Key coordinates:** Player phi=π/2 (north pole), theta=0. Entities positioned via spherical coordinates and oriented to face globe surface.
+## Runtime architecture
 
-### 2. Biome System
-Four rotating regions with distinct visuals and spawning patterns:
-```javascript
-BIOMES: {
-  GRASSLAND: (0° < theta < 120°) - trees, flowers, insects
-  DESERT: (120° < theta < 240°) - cacti, camels
-  SNOW: (60° < theta < 120°) - penguins, polar bears
-  SAFARI: (0° < theta < 60°) - zebras, giraffes, elephants
-}
+- `src/main.js` creates the UI, loads the save, and starts the game.
+- `src/game.js` owns the Three.js scene and coordinates game systems.
+- `src/photography.js` handles camera targeting and captured image data.
+- `src/progression.js` contains pure requirement and economy rules.
+- `src/content.js` contains biome, species, request, collectible, and cosmetic
+  data.
+- `src/persistence.js` sanitizes/version-saves local progress and stores photos
+  in IndexedDB.
+- `src/ui.js` renders and binds the start screen, HUD, camera, dialogs, field
+  guide, outfitter, settings, and finale.
+- `src/styles.css` contains the responsive and reduced-motion presentation.
+
+The world currently uses an intentional procedural low-poly treatment. The
+bundled model and sprite folders are not runtime asset registries.
+
+## Gameplay invariants
+
+- The biome order is grassland → desert → snow → safari → return home.
+- A stamp is earned only when every authored requirement for the current biome
+  is complete.
+- Duplicate photographs do not grant another discovery reward.
+- Gathering changes inventory and lifetime totals; selling clears inventory but
+  must not erase lifetime quest progress.
+- Saves are treated as untrusted data and sanitized against known content IDs.
+- A fresh expedition clears both local progress and stored photo thumbnails.
+- Settings persist with the expedition. Reduced motion affects 3D motion and
+  flashes as well as CSS animation.
+- Critical camera controls must remain inside safe areas and unobstructed at
+  phone sizes.
+
+Put reusable rules in `src/progression.js` or another pure system module rather
+than duplicating them in UI and scene code.
+
+## Input and accessibility
+
+- Move: thumbstick, WASD, or arrow keys.
+- Camera: on-screen camera button or `C`.
+- Shutter: on-screen button or `Space` while in camera mode.
+- Interact/gather: context button, `E`, or `Space` while roaming.
+- Field guide: book button or `G`.
+- Fullscreen: utility button or `F`; `Esc` exits camera/fullscreen.
+
+Keep pointer controls compatible with simultaneous mobile input. Do not allow
+toasts, modals, or safe-area changes to cover the shutter or close button.
+Maintain button labels, focus behavior, `role="switch"` state, keyboard
+navigation, and reduced-motion behavior when changing UI.
+
+## Verification
+
+Use small implementation steps and run the relevant fast tests first:
+
+```bash
+npm run test:unit
+npm run build
+npm run test:smoke
 ```
-Biome selection via `getBiomeAt(phi, theta)` based on longitude slices. Water spawns procedurally via sine wave.
 
-### 3. Game State Management
-Central `state` object (JavaScript object, not reactive):
-```javascript
-state = {
-  bells: 0, inventory: [], time: 0, weather: 'clear',
-  playerPhi/Theta, weatherIntensity, skyMode, moonPhase
-}
-```
-Updates propagate via direct mutation. No centralized store—UI updates manually triggered after state changes.
+`npm run test:all` runs all three gates. The smoke command starts and stops its
+own Vite server unless `GLOBULAR_ROAM_URL` points to an existing build.
 
-### 4. Procedural Spawning
-- **Rate:** ~0.8% chance per frame to spawn new entity (pseudo-random)
-- **Collision checks:** 8-unit minimum spacing, 22-unit safety zone around player, water detection
-- **Type distribution:** 12% clouds, 4% birds, 2% NPCs (house/shop), remainder environment/wildlife
-- **Animation:** Entities use sine-wave patterns for movement (birds, butterflies, animals bob/drift)
+For gameplay changes:
 
-## Essential Developer Workflows
+1. Exercise the affected multi-step flow, not only the final state.
+2. Inspect `window.render_game_to_text()` and ensure it matches the visuals.
+3. Use `window.advanceTime(ms)` for deterministic stepping.
+4. Inspect the latest relevant browser screenshots.
+5. Check browser console and page errors.
+6. Append material decisions, fixes, verification, and remaining device-only
+   work to `progress.md`.
 
-### Adding New Item Types
-1. Add entry to `ITEM_TYPES` object (emoji, base value, color for rendering)
-2. Update `spawnProceduralEntity()` spawn probabilities
-3. Add mesh generation code in entity creation section
-4. Add collect logic to `checkCollisions()` if harvestable
-5. Update inventory emoji rendering in `updateInventoryUI()`
+Use the test-only helpers under `window.__globularTest` for state-transition
+coverage. Also preserve at least one route that uses real player input when the
+feature concerns discoverability, traversal, or controls.
 
-### Modifying Biome Content
-Edit `getBiomeAt()` return values to change latitude boundaries, or modify spawn logic in `spawnProceduralEntity()` conditional blocks. Biome colors defined in `BIOMES.{KEY}.ground`.
-
-### Weather/Sky Effects
-- Weather transitions happen in `changeWeather()` (60-second intervals)
-- Sky color gradient computed in `updateAtmosphere()` based on day cycle progress
-- Particle system (`weatherParticles`) controlled by weather state and intensity
-- Rare sky modes ("pink"/"purple") roll every 2 minutes in `rollSkyMode()`
-
-### Performance Tuning
-- **Globe spawn:** Initial 160 entities set in `createGlobe()` loop
-- **Entity limit:** No hard cap; watch for lag with >500+ entities on lower-end devices
-- **Camera frustum:** Default 75° FOV, positioned 14 units away from player
-- **Rendering:** WebGL renderer, shadow mapping enabled for directional sun
-
-## Critical Patterns & Conventions
-
-### Joystick Input Handling
-Mobile-first: `setupControls()` normalizes touch/mouse input into `joystick.dx/dy` (-1 to 1 range). Player rotation calculated via `Math.atan2(dx, dy)`. Movement blocked if water detected unless player on bridge.
-
-### Audio System
-Minimal Web Audio API—no pre-loaded sounds. `playTone()` generates sine/triangle waves:
-- Gather: 440→660 Hz ascending
-- Sell: 523→659 Hz (major third)
-- Click: 300 Hz sine pulse
-Audio context must be resumed on first user interaction due to browser autoplay policy.
-
-### Collision & Interaction
-`isPositionOccupied()` checks grid cells. `checkCollisions()` uses continuous distance checks (<2.5 units triggers interaction). Different entity types have different radii (NPCs: 45 units, wildlife: 22 units).
-
-### Time System
-- **Day cycle:** 480 seconds (8 minutes) per complete sun orbit
-- **Sun intensity:** Varies 0.1 (night) → 1.0 (noon) based on `cycleProgress`
-- **Firefly visibility:** Only visible during twilight hours
-- **Moon phases:** Visual effect (no gameplay impact)
-
-## Integration Points
-
-### External Dependencies
-- **Three.js r128** (CDN): All 3D rendering
-- **Tailwind CSS** (CDN): UI styling (glass morphism with backdrop blur)
-- **Canvas API:** Dynamic sky texture, lens flare generation
-
-### Browser APIs
-- **WebGL/WebGLRenderer:** Core rendering
-- **Web Audio API:** Sound generation (requires context resume)
-- **Touch/Pointer Events:** Mobile input, joystick tracking
-- **requestAnimationFrame:** 60 FPS animation loop
-
-### No Build Step
-Single-file architecture—changes are immediate. Reload to see modifications (no hot reload).
-
-## Debugging Tips
-- Open DevTools → Console to check `state` object in real-time
-- Toggle entity visibility with `entities.forEach(e => e.mesh.visible = !e.mesh.visible)`
-- Force weather change: `state.targetWeather = 'rain'; changeWeather()`
-- Inspect entity positions: Entities stored in global `entities` array with `phi`, `theta`, `mesh` properties
-
-## Common Gotchas
-1. **Coordinate system:** phi=latitude (0→π), theta=longitude (-π→π). Don't confuse with traditional lat/long.
-2. **Spherical rotation:** Must apply `quaternion.setFromUnitVectors()` so entities face outward on globe surface.
-3. **Animation timing:** Uses `Date.now() * 0.001` for smooth loops—delta time applied separately.
-4. **Inventory limits:** 8 slots UI, but state.inventory array unbounded; no overflow handling.
-5. **Asset loading:** All visuals procedurally generated—no image/model imports, safe for offline use.
+Browser artifacts are written under `output/playwright/first-orbit/`. The
+complete route includes desktop progression, duplicate-photo economy,
+IndexedDB thumbnails, save reload, mobile safe-area controls, settings, and
+settings persistence.

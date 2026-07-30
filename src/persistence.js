@@ -1,3 +1,12 @@
+import {
+  BIOME_ORDER,
+  BIOMES,
+  COLLECTIBLES,
+  COSMETICS,
+  SPECIES,
+  normalizeLongitude,
+} from './content.js';
+
 const SAVE_KEY = 'globular_roam_save_v2';
 const OLD_META_KEY = 'cozyglobe_meta_v1';
 const DB_NAME = 'globular_roam_photos';
@@ -26,23 +35,81 @@ export function createDefaultSave() {
   };
 }
 
-function sanitizeSave(raw) {
+const isRecord = (value) => Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+const isHexColor = (value) => typeof value === 'string' && /^#[0-9a-f]{6}$/i.test(value);
+
+function sanitizeCountMap(raw, catalog) {
+  if (!isRecord(raw)) return {};
+  return Object.fromEntries(Object.entries(raw).flatMap(([id, count]) => {
+    const numeric = Number(count);
+    if (!catalog[id] || !Number.isFinite(numeric) || numeric <= 0) return [];
+    return [[id, Math.floor(numeric)]];
+  }));
+}
+
+function sanitizeDiscoveries(raw) {
+  if (!isRecord(raw)) return {};
+  return Object.fromEntries(Object.entries(raw).flatMap(([id, discovery]) => {
+    const species = SPECIES[id];
+    if (!species || !isRecord(discovery)) return [];
+    return [[id, {
+      speciesId: id,
+      biomeId: species.biome,
+      discoveredAt: typeof discovery.discoveredAt === 'string'
+        ? discovery.discoveredAt
+        : new Date(0).toISOString(),
+    }]];
+  }));
+}
+
+export function sanitizeSave(raw) {
   const defaults = createDefaultSave();
-  if (!raw || typeof raw !== 'object') return defaults;
+  if (!isRecord(raw)) return defaults;
+  const unlockedCosmetics = Array.isArray(raw.unlockedCosmetics)
+    ? [...new Set(['field_cap', ...raw.unlockedCosmetics.filter((id) => COSMETICS[id])])]
+    : ['field_cap'];
+  const equippedCosmetic = unlockedCosmetics.includes(raw.equippedCosmetic)
+    ? raw.equippedCosmetic
+    : 'field_cap';
+  const longitude = Number(raw.longitude);
+  const latitude = Number(raw.latitude);
+  const bells = Number(raw.bells);
   return {
     ...defaults,
-    ...raw,
     version: SAVE_VERSION,
-    appearance: { ...defaults.appearance, ...(raw.appearance || {}) },
-    inventory: { ...(raw.inventory || {}) },
-    lifetimeCollected: { ...(raw.lifetimeCollected || {}) },
-    discoveries: { ...(raw.discoveries || {}) },
-    stamps: Array.isArray(raw.stamps) ? [...new Set(raw.stamps)] : [],
-    introducedBiomes: Array.isArray(raw.introducedBiomes) ? [...new Set(raw.introducedBiomes)] : [],
-    unlockedCosmetics: Array.isArray(raw.unlockedCosmetics)
-      ? [...new Set(['field_cap', ...raw.unlockedCosmetics])]
-      : ['field_cap'],
-    settings: { ...defaults.settings, ...(raw.settings || {}) },
+    started: Boolean(raw.started),
+    completed: Boolean(raw.completed),
+    playerName: typeof raw.playerName === 'string'
+      ? (raw.playerName.trim().slice(0, 18) || defaults.playerName)
+      : defaults.playerName,
+    appearance: {
+      ...defaults.appearance,
+      shirt: isHexColor(raw.appearance?.shirt) ? raw.appearance.shirt : defaults.appearance.shirt,
+      skin: isHexColor(raw.appearance?.skin) ? raw.appearance.skin : defaults.appearance.skin,
+    },
+    longitude: Number.isFinite(longitude) ? normalizeLongitude(longitude) : defaults.longitude,
+    latitude: Number.isFinite(latitude)
+      ? Math.max(-0.31, Math.min(0.31, latitude))
+      : defaults.latitude,
+    bells: Number.isFinite(bells) ? Math.max(0, Math.floor(bells)) : defaults.bells,
+    inventory: sanitizeCountMap(raw.inventory, COLLECTIBLES),
+    lifetimeCollected: sanitizeCountMap(raw.lifetimeCollected, COLLECTIBLES),
+    discoveries: sanitizeDiscoveries(raw.discoveries),
+    stamps: Array.isArray(raw.stamps)
+      ? [...new Set(raw.stamps.filter((id) => BIOME_ORDER.includes(id)))]
+      : [],
+    introducedBiomes: Array.isArray(raw.introducedBiomes)
+      ? [...new Set(raw.introducedBiomes.filter((id) => BIOMES[id]))]
+      : [],
+    unlockedCosmetics,
+    equippedCosmetic,
+    settings: {
+      sound: typeof raw.settings?.sound === 'boolean' ? raw.settings.sound : defaults.settings.sound,
+      reducedMotion: typeof raw.settings?.reducedMotion === 'boolean'
+        ? raw.settings.reducedMotion
+        : defaults.settings.reducedMotion,
+    },
+    updatedAt: typeof raw.updatedAt === 'string' ? raw.updatedAt : defaults.updatedAt,
   };
 }
 
