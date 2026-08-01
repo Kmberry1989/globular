@@ -25,7 +25,28 @@ globularroam/
 
 ### What to Replace
 
-27 placeholder `.glb` files in `/models/`:
+The original placeholder library is retained alongside the active expanded catalog.
+Generate missing catalog placeholders without overwriting any supplied art with:
+
+```bash
+npm run assets:placeholders
+```
+
+Use `node scripts/generate-model-placeholders.mjs --force` only when you intentionally want to recreate catalog placeholders.
+
+Each generated `.glb` is a valid, named glTF 2.0 binary containing a minimal triangle proxy. It is deliberately not rendered at runtime: the game keeps its procedural low-poly entity visible until production art is supplied.
+
+### Expanded entity placeholders
+
+48 additional placeholder `.glb` files are now cataloged in `MODEL_ASSETS` in `src/content.js`:
+
+- **Wildlife:** `hedgehog`, `songbird`, `frog`, `squirrel`, `meerkat`, `desert_tortoise`, `roadrunner`, `gecko`, `seal`, `snowy_owl`, `arctic_hare`, `musk_ox`, `lion`, `hippo`, `warthog`, `hornbill`
+- **Collectibles:** `clover_mushroom`, `acorn`, `dewberry`, `wild_mint`, `cactus_fruit`, `desert_pearl`, `amber_shard`, `date_cluster`, `frostberry`, `pinecone`, `aurora_shell`, `snow_crystal`, `baobab_pod`, `amber_bead`, `river_reed`, `painted_stone`
+- **Structures:** `windmill`, `stone_bridge`, `birdhouse`, `picnic_shelter`, `oasis_well`, `sandstone_ruins`, `desert_tent`, `wind_tower`, `igloo`, `ice_bridge`, `ranger_watchtower`, `sled_station`, `lookout_tower`, `water_trough`, `rope_bridge`, `safari_tent`
+
+The registry path is canonical (`models/<entity-id>.glb`). Replacement models should be centered on the origin, use +Y as up, and fit a roughly 0.5–2 world-unit footprint before any authored scale adjustment.
+
+### Original placeholder library
 
 **Collectable Items:**
 - `apple.glb`, `orange.glb`, `flower.glb`, `bush.glb`, `butterfly.glb`, `ladybug.glb`, `firefly.glb`, `fish.glb`
@@ -312,4 +333,3 @@ Pre-generated file with metadata:
 - **Web Audio API:** https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API
 - **Blender glTF Export:** https://docs.blender.org/manual/en/latest/addons/io_scene_gltf2/index.html
 - **Sprite Composition:** [Canvas Composite Operations](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/globalCompositeOperation)
-

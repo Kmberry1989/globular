@@ -10,7 +10,8 @@
     "test": "npm run test:unit",
     "test:unit": "node --test test/*.test.js",
     "test:smoke": "node scripts/run-smoke.mjs",
-    "test:all": "npm run test:unit && npm run build && npm run test:smoke"
+    "test:all": "npm run test:unit && npm run build && npm run test:smoke",
+    "assets:placeholders": "node scripts/generate-model-placeholders.mjs"
   },
   "dependencies": {
     "archiver": "^8.0.0",

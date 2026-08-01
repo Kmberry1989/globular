@@ -5,6 +5,8 @@ import {
   COLLECTIBLES,
   COSMETICS,
   SPECIES,
+  STRUCTURES,
+  WORLD_LAYOUT,
   biomeForLongitude,
   currentChapter,
   normalizeLongitude,
@@ -26,60 +28,6 @@ const PLAYER_POSITION = new THREE.Vector3(0, 0, 0);
 const MOVE_SPEED = 0.25;
 const LATITUDE_LIMIT = 0.31;
 const INTERACTION_DISTANCE = 2.7;
-
-const WORLD_LAYOUT = {
-  grassland: {
-    wildlife: [
-      ['butterfly', -0.055, -0.045],
-      ['ladybug', 0.075, 0.025],
-      ['red_panda', 0.14, -0.06],
-    ],
-    collectibles: [
-      ['starflower', -0.025, 0.02],
-      ['starflower', 0.055, -0.025],
-      ['starflower', 0.125, 0.07],
-      ['apple', -0.12, 0.06],
-    ],
-  },
-  desert: {
-    wildlife: [
-      ['camel', -0.045, -0.025],
-      ['fennec', 0.085, 0.05],
-      ['fish', 0.14, -0.075],
-    ],
-    collectibles: [
-      ['sunpetal', 0.025, 0.035],
-      ['sunpetal', 0.13, 0.08],
-      ['smooth_stone', -0.1, -0.06],
-    ],
-  },
-  snow: {
-    wildlife: [
-      ['penguin', -0.045, 0.04],
-      ['polar_bear', 0.085, -0.035],
-      ['arctic_fox', 0.145, 0.065],
-    ],
-    collectibles: [
-      ['snowdrop', 0.02, -0.035],
-      ['ice_glass', -0.11, 0.06],
-      ['ice_glass', 0.14, -0.06],
-    ],
-  },
-  safari: {
-    wildlife: [
-      ['zebra', -0.07, 0.02],
-      ['giraffe', 0.025, -0.045],
-      ['elephant', 0.105, 0.045],
-      ['flamingo', 0.17, -0.07],
-      ['crab', -0.15, -0.07],
-    ],
-    collectibles: [
-      ['fallen_feather', -0.025, -0.025],
-      ['fallen_feather', 0.14, 0.07],
-      ['seed_pod', 0.055, 0.055],
-    ],
-  },
-};
 
 function hexToNumber(color) {
   return Number.parseInt(color.replace('#', ''), 16);
@@ -280,6 +228,68 @@ function makeWildlife(species) {
     }
     animal.add(body);
     focusHeight = 0.35;
+  } else if (species.form === 'bird') {
+    const body = mesh(new THREE.SphereGeometry(0.3, 8, 7), primary, { y: 0.85 });
+    body.scale.set(0.9, 1.12, 1.2);
+    const head = mesh(new THREE.SphereGeometry(0.2, 8, 7), primary, { y: 1.16 });
+    head.position.z = 0.24;
+    const beak = mesh(new THREE.ConeGeometry(0.09, 0.28, 5), secondary, { y: 1.16 });
+    beak.rotation.x = Math.PI / 2; beak.position.z = 0.49;
+    for (const side of [-1, 1]) {
+      const wing = mesh(new THREE.SphereGeometry(0.24, 7, 6), secondary, { y: 0.88 });
+      wing.scale.set(0.28, 0.7, 1); wing.position.x = side * 0.25;
+      wing.name = side < 0 ? 'wing-left' : 'wing-right'; animal.add(wing);
+    }
+    animal.add(body, head, beak); focusHeight = 0.95;
+  } else if (species.form === 'frog') {
+    const body = mesh(new THREE.SphereGeometry(0.38, 8, 7), primary, { y: 0.32 });
+    body.scale.set(1.1, 0.62, 1.2);
+    for (const x of [-0.15, 0.15]) {
+      const eye = mesh(new THREE.SphereGeometry(0.1, 7, 6), secondary, { y: 0.58 });
+      eye.position.set(x, 0, 0.18); animal.add(eye);
+    }
+    animal.add(body); focusHeight = 0.42;
+  } else if (species.form === 'tortoise') {
+    const shell = mesh(new THREE.SphereGeometry(0.5, 9, 7), primary, { y: 0.4 });
+    shell.scale.set(1.15, 0.6, 1.25);
+    const head = mesh(new THREE.SphereGeometry(0.16, 7, 6), secondary, { y: 0.32 }); head.position.z = 0.58;
+    addLegs(0.22, 0.28, 0.3, secondary); animal.add(shell, head); focusHeight = 0.45;
+  } else if (species.form === 'seal') {
+    const body = mesh(new THREE.SphereGeometry(0.55, 9, 7), primary, { y: 0.38 });
+    body.scale.set(0.88, 0.62, 1.5);
+    const head = mesh(new THREE.SphereGeometry(0.28, 8, 7), primary, { y: 0.46 }); head.position.z = 0.58;
+    const tail = mesh(new THREE.ConeGeometry(0.22, 0.46, 3), secondary, { y: 0.28 }); tail.rotation.x = Math.PI / 2; tail.position.z = -0.78;
+    animal.add(body, head, tail); focusHeight = 0.48;
+  } else if (species.form === 'hare' || species.form === 'squirrel') {
+    const body = mesh(new THREE.SphereGeometry(0.38, 8, 7), primary, { y: 0.48 }); body.scale.z = 1.25;
+    const head = mesh(new THREE.SphereGeometry(0.25, 8, 7), primary, { y: 0.7 }); head.position.z = 0.34;
+    for (const x of [-0.11, 0.11]) {
+      const ear = mesh(new THREE.CapsuleGeometry(0.065, species.form === 'hare' ? 0.42 : 0.24, 4, 6), secondary, { y: species.form === 'hare' ? 1.08 : 0.95 });
+      ear.position.x = x; ear.position.z = 0.31; animal.add(ear);
+    }
+    if (species.form === 'squirrel') {
+      const tail = mesh(new THREE.SphereGeometry(0.26, 7, 6), secondary, { y: 0.78 }); tail.position.z = -0.46; tail.scale.set(0.8, 1.5, 0.75); animal.add(tail);
+    }
+    addLegs(0.28, 0.2, 0.25, secondary); animal.add(body, head); focusHeight = 0.7;
+  } else if (species.form === 'hedgehog') {
+    const body = mesh(new THREE.SphereGeometry(0.47, 9, 7), primary, { y: 0.38 }); body.scale.set(1.1, 0.7, 1.2);
+    const face = mesh(new THREE.ConeGeometry(0.21, 0.46, 7), secondary, { y: 0.34 }); face.rotation.x = Math.PI / 2; face.position.z = 0.48;
+    animal.add(body, face); focusHeight = 0.42;
+  } else if (['meerkat', 'gecko', 'musk_ox', 'lion', 'hippo', 'warthog'].includes(species.form)) {
+    const isLarge = ['musk_ox', 'lion', 'hippo'].includes(species.form);
+    const isHippo = species.form === 'hippo';
+    const legHeight = isHippo ? 0.34 : isLarge ? 0.52 : 0.27;
+    addLegs(legHeight, isLarge ? 0.36 : 0.25, isLarge ? 0.38 : 0.28, secondary);
+    const body = mesh(new THREE.SphereGeometry(isLarge ? 0.58 : 0.36, 9, 7), primary, { y: legHeight + (isLarge ? 0.3 : 0.2) });
+    body.scale.set(isHippo ? 1.18 : 0.9, isHippo ? 0.72 : 0.78, 1.3);
+    const head = mesh(new THREE.SphereGeometry(isLarge ? 0.32 : 0.2, 8, 7), primary, { y: legHeight + (isLarge ? 0.43 : 0.35) }); head.position.z = isLarge ? 0.55 : 0.4;
+    animal.add(body, head);
+    if (species.form === 'musk_ox') {
+      for (const x of [-0.24, 0.24]) { const horn = mesh(new THREE.TorusGeometry(0.14, 0.035, 5, 9, Math.PI), secondary, { y: legHeight + 0.65 }); horn.position.x = x; horn.rotation.y = x > 0 ? Math.PI / 2 : -Math.PI / 2; animal.add(horn); }
+    }
+    if (species.form === 'lion') { const mane = mesh(new THREE.SphereGeometry(0.4, 8, 7), secondary, { y: legHeight + 0.44 }); mane.position.z = 0.5; mane.scale.z = 0.5; animal.add(mane); }
+    if (species.form === 'warthog') { for (const x of [-0.12, 0.12]) { const tusk = mesh(new THREE.ConeGeometry(0.05, 0.22, 5), secondary, { y: 0.62 }); tusk.position.set(x, 0, 0.56); tusk.rotation.x = -0.65; animal.add(tusk); } }
+    focusHeight = legHeight + (isLarge ? 0.55 : 0.42);
   } else {
     const isCamel = species.form === 'camel';
     const isBear = species.form === 'bear';
@@ -347,12 +357,66 @@ function makeCollectible(item) {
     const feather = mesh(new THREE.CapsuleGeometry(0.08, 0.38, 4, 7), item.color, { y: 0.28 });
     feather.rotation.z = -0.5;
     root.add(feather);
+  } else if (item.form === 'mushroom') {
+    root.add(mesh(new THREE.CylinderGeometry(0.07, 0.09, 0.28, 7), 0xf1e7ce, { y: 0.14 }));
+    root.add(mesh(new THREE.SphereGeometry(0.22, 8, 6), item.color, { y: 0.31 }));
+  } else if (item.form === 'acorn' || item.form === 'pod' || item.form === 'pinecone') {
+    const shape = mesh(new THREE.SphereGeometry(0.22, 8, 7), item.color, { y: 0.23 });
+    shape.scale.y = item.form === 'pinecone' ? 1.35 : 1.1; root.add(shape);
+    root.add(mesh(new THREE.CylinderGeometry(0.14, 0.18, 0.09, 7), 0x5d4a32, { y: 0.42 }));
+  } else if (item.form === 'berry') {
+    for (const [x, z] of [[0, 0], [-0.12, 0.06], [0.12, 0.06], [0, -0.11]]) root.add(mesh(new THREE.SphereGeometry(0.11, 7, 6), item.color, { y: 0.24 }).translateX(x).translateZ(z));
+  } else if (item.form === 'sprig' || item.form === 'reed') {
+    for (const x of [-0.09, 0, 0.09]) { const blade = mesh(new THREE.CapsuleGeometry(0.025, item.form === 'reed' ? 0.54 : 0.38, 4, 5), item.color, { y: item.form === 'reed' ? 0.3 : 0.22 }); blade.position.x = x; blade.rotation.z = x * 2; root.add(blade); }
+  } else if (item.form === 'fruit' || item.form === 'pearl') {
+    root.add(mesh(new THREE.SphereGeometry(item.form === 'pearl' ? 0.2 : 0.24, 8, 7), item.color, { y: 0.24 }));
+  } else if (item.form === 'crystal') {
+    const crystal = mesh(new THREE.OctahedronGeometry(0.28, 0), item.color, { y: 0.28 }); crystal.scale.y = 1.5; root.add(crystal);
+  } else if (item.form === 'shell') {
+    const shell = mesh(new THREE.SphereGeometry(0.26, 8, 6), item.color, { y: 0.2 }); shell.scale.set(1.25, 0.42, 1); root.add(shell);
+  } else if (item.form === 'stone') {
+    root.add(mesh(new THREE.DodecahedronGeometry(0.25, 0), item.color, { y: 0.22 }));
   } else {
     root.add(mesh(new THREE.DodecahedronGeometry(0.24, 0), item.color, { y: 0.22 }));
   }
   root.userData.kind = 'collectible';
   root.userData.itemId = item.id;
   return { root, item, collected: false, phase: Math.random() * Math.PI * 2 };
+}
+
+function makeStructure(structure) {
+  const root = new THREE.Group();
+  const { color, accent, form } = structure;
+  if (form === 'windmill') {
+    root.add(mesh(new THREE.CylinderGeometry(0.38, 0.58, 1.65, 8), color, { y: 0.82 }));
+    const hub = mesh(new THREE.SphereGeometry(0.17, 7, 6), accent, { y: 1.5 }); hub.position.z = 0.42; root.add(hub);
+    for (let index = 0; index < 4; index += 1) { const blade = mesh(new THREE.BoxGeometry(0.12, 0.72, 0.06), accent, { y: 1.5 }); blade.position.z = 0.43; blade.rotation.z = index * Math.PI / 2; blade.position.y += Math.cos(index * Math.PI / 2) * 0.2; blade.position.x += Math.sin(index * Math.PI / 2) * 0.2; root.add(blade); }
+  } else if (form === 'bridge') {
+    const deck = mesh(new THREE.BoxGeometry(1.8, 0.16, 0.62), color, { y: 0.52 }); root.add(deck);
+    for (const x of [-0.7, 0.7]) root.add(mesh(new THREE.CylinderGeometry(0.09, 0.11, 0.55, 6), accent, { y: 0.27 }).translateX(x));
+  } else if (form === 'birdhouse') {
+    root.add(mesh(new THREE.CylinderGeometry(0.07, 0.09, 1.25, 6), accent, { y: 0.62 }));
+    root.add(mesh(new THREE.BoxGeometry(0.48, 0.42, 0.4), color, { y: 1.35 }));
+    const roof = mesh(new THREE.ConeGeometry(0.38, 0.32, 4), accent, { y: 1.72 }); roof.rotation.y = Math.PI / 4; root.add(roof);
+  } else if (form === 'well' || form === 'trough') {
+    const base = mesh(form === 'well' ? new THREE.CylinderGeometry(0.52, 0.62, 0.55, 10) : new THREE.BoxGeometry(1.25, 0.42, 0.7), color, { y: 0.28 }); root.add(base);
+    const water = mesh(form === 'well' ? new THREE.CylinderGeometry(0.36, 0.36, 0.03, 10) : new THREE.BoxGeometry(0.95, 0.03, 0.45), accent, { y: form === 'well' ? 0.57 : 0.5 }); root.add(water);
+  } else if (form === 'ruins') {
+    for (const x of [-0.38, 0.38]) root.add(mesh(new THREE.BoxGeometry(0.26, 1.25, 0.3), color, { y: 0.62 }).translateX(x));
+    root.add(mesh(new THREE.BoxGeometry(1.05, 0.2, 0.35), accent, { y: 1.28 }));
+  } else if (form === 'igloo') {
+    const dome = mesh(new THREE.SphereGeometry(0.82, 12, 8, 0, Math.PI * 2, 0, Math.PI / 2), color, { y: 0.02 }); root.add(dome);
+    root.add(mesh(new THREE.CylinderGeometry(0.22, 0.25, 0.45, 7), accent, { y: 0.22 }).translateZ(0.67));
+  } else if (form === 'tower') {
+    for (const x of [-0.38, 0.38]) for (const z of [-0.28, 0.28]) root.add(mesh(new THREE.CylinderGeometry(0.07, 0.1, 1.8, 6), accent, { y: 0.9 }).translateX(x).translateZ(z));
+    root.add(mesh(new THREE.BoxGeometry(1.05, 0.18, 0.85), color, { y: 1.78 }));
+    root.add(mesh(new THREE.ConeGeometry(0.72, 0.52, 4), accent, { y: 2.12 }));
+  } else if (form === 'tent' || form === 'shelter') {
+    root.add(mesh(new THREE.BoxGeometry(1.15, 0.08, 0.82), accent, { y: 0.04 }));
+    const canopy = mesh(new THREE.ConeGeometry(0.82, 0.85, form === 'tent' ? 4 : 3), color, { y: 0.48 }); canopy.rotation.y = Math.PI / 4; root.add(canopy);
+  }
+  root.userData.kind = 'structure'; root.userData.structureId = structure.id;
+  return root;
 }
 
 function makeTree(color = 0x4d8c56) {
@@ -416,6 +480,7 @@ export class GlobularRoamGame {
     this.previousBiome = this.currentBiome;
     this.wildlife = [];
     this.collectibles = [];
+    this.structures = [];
     this.rangers = [];
     this.lastFrame = performance.now();
     this.manualStepping = false;
@@ -544,6 +609,13 @@ export class GlobularRoamGame {
         decoration.scale.setScalar(scale);
         positionOnGlobe(decoration, longitude, latitude);
         this.globe.add(decoration);
+      }
+
+      for (const [structureId, lonOffset, latitude] of WORLD_LAYOUT[biomeId].structures) {
+        const structure = makeStructure(STRUCTURES[structureId]);
+        positionOnGlobe(structure, biome.center + lonOffset, latitude);
+        this.globe.add(structure);
+        this.structures.push({ root: structure, structure: STRUCTURES[structureId] });
       }
 
       for (const [speciesId, lonOffset, latitude] of WORLD_LAYOUT[biomeId].wildlife) {
@@ -1077,6 +1149,11 @@ export class GlobularRoamGame {
         weather: this.atmosphere?.weather || 'breezy',
       },
       visibleWildlife: visible,
+      world: {
+        wildlife: this.wildlife.length,
+        collectibles: this.collectibles.filter((entry) => !entry.collected).length,
+        structures: this.structures.length,
+      },
       settings: { ...this.save.settings },
       bells: this.save.bells,
     });
@@ -1123,6 +1200,11 @@ export class GlobularRoamGame {
         this.render();
         return true;
       },
+      worldCounts: () => ({
+        wildlife: this.wildlife.length,
+        collectibles: this.collectibles.length,
+        structures: this.structures.length,
+      }),
       discover: (speciesId) => {
         const species = SPECIES[speciesId];
         if (!species) return;

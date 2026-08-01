@@ -4,7 +4,7 @@ import path from 'node:path';
 import { chromium } from 'playwright';
 
 const baseUrl = process.env.GLOBULAR_ROAM_URL || 'http://127.0.0.1:5173';
-const outputDir = path.resolve('output/playwright/first-orbit');
+const outputDir = path.resolve(process.env.GLOBULAR_ROAM_OUTPUT_DIR || 'output/playwright/first-orbit');
 fs.mkdirSync(outputDir, { recursive: true });
 
 const browser = await chromium.launch({
@@ -124,11 +124,28 @@ assert.deepEqual((await state()).expedition.stamps, ['grassland', 'desert', 'sno
 assert.equal((await state()).expedition.chapter, 'return_home');
 await closeRequestIfVisible();
 
+const expandedPairs = [
+  ['grassland', 'hedgehog', 'dewberry'],
+  ['desert', 'meerkat', 'amber_shard'],
+  ['snow', 'seal', 'frostberry'],
+  ['safari', 'lion', 'baobab_pod'],
+];
+for (const [biomeId, speciesId, itemId] of expandedPairs) {
+  await page.evaluate((id) => window.__globularTest.teleportToBiome(id), biomeId);
+  await advance(160);
+  await captureSpecies(speciesId);
+  await gatherItem(itemId);
+}
+const expandedWorld = await page.evaluate(() => window.__globularTest.worldCounts());
+assert.deepEqual(expandedWorld, { wildlife: 30, collectibles: 29, structures: 16 });
+assert.equal((await state()).expedition.discoveries.length, 11);
+await page.screenshot({ path: path.join(outputDir, '04-expanded-entities.png'), fullPage: true });
+
 await clickForce('#field-guide-button');
 await page.waitForSelector('#guide-layer:not(.hidden)');
 await page.waitForTimeout(350);
-assert.equal(await page.locator('.guide-entry.found').count(), 7);
-assert.equal(await page.locator('.guide-entry.found .guide-image img').count(), 7);
+assert.equal(await page.locator('.guide-entry.found').count(), 11);
+assert.equal(await page.locator('.guide-entry.found .guide-image img').count(), 11);
 await page.screenshot({ path: path.join(outputDir, '04-field-guide.png'), fullPage: true });
 await clickForce('#guide-close');
 
@@ -153,10 +170,10 @@ await clickForce('#continue-button');
 await advance(250);
 const restored = await state();
 assert.equal(restored.expedition.complete, true);
-assert.equal(restored.expedition.discoveries.length, 7);
+assert.equal(restored.expedition.discoveries.length, 11);
 await clickForce('#field-guide-button');
 await page.waitForTimeout(300);
-assert.equal(await page.locator('.guide-entry.found .guide-image img').count(), 7);
+assert.equal(await page.locator('.guide-entry.found .guide-image img').count(), 11);
 await page.screenshot({ path: path.join(outputDir, '06-restored-guide.png'), fullPage: true });
 
 const mobileContext = await browser.newContext({

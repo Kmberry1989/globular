@@ -74,3 +74,19 @@ test('malformed values fall back without granting progress or currency', () => {
   assert.equal(save.equippedCosmetic, 'field_cap');
   assert.deepEqual(save.settings, { sound: true, reducedMotion: false });
 });
+
+test('sanitization accepts expanded discoveries and collectibles but rejects unknown IDs', () => {
+  const save = sanitizeSave({
+    inventory: { dewberry: 2, amber_shard: 1, mystery_relic: 9 },
+    lifetimeCollected: { river_reed: 3, mystery_relic: 9 },
+    discoveries: {
+      hedgehog: { discoveredAt: '2026-07-30T00:00:00.000Z' },
+      hornbill: { discoveredAt: '2026-07-30T00:00:00.000Z' },
+      mystery_beast: { discoveredAt: '2026-07-30T00:00:00.000Z' },
+    },
+  });
+
+  assert.deepEqual(save.inventory, { dewberry: 2, amber_shard: 1 });
+  assert.deepEqual(save.lifetimeCollected, { river_reed: 3 });
+  assert.deepEqual(Object.keys(save.discoveries), ['hedgehog', 'hornbill']);
+});

@@ -26,3 +26,10 @@ Original prompt: Implement the approved “Globular Roam: First Orbit” mobile-
 - Added a self-contained smoke runner that starts Vite on a strict port, completes the browser route, and shuts the server down. `npm run test:all` now runs all rule, build, and browser gates locally.
 - Added clean-checkout GitHub Actions verification with failure-only browser artifact upload. Replaced the obsolete single-file smoke script and prototype-era Copilot instructions, and updated the README for the current controls, modules, and test commands.
 - Final local Milestone 0 verification: all 9 rule tests, production build, full desktop expedition, persistence reload, mobile camera layout, accessible settings state, and mobile settings reload pass. Real iOS Safari and Android Chrome first-stamp runs remain the only unverified Milestone 0 release gate.
+
+## 2026-07-30
+
+- Added the Expanded Biome Entity Catalog: 16 optional wildlife discoveries, 16 gatherables, and 16 non-blocking low-poly structures across the four existing biomes. First Orbit requirements remain unchanged.
+- Added the future-art `MODEL_ASSETS` registry plus `npm run assets:placeholders`, which safely creates 48 canonical, valid named GLB placeholders without overwriting existing art.
+- Extended content and persistence tests for catalog counts, placement integrity, unchanged requirements, and expanded save data. The full browser route now photographs and gathers one new entity per biome and checks world totals (30 wildlife, 29 collectibles, 16 structures).
+- Verified `npm run test:unit`, `npm run build`, `git diff --check`, and the isolated full browser route. Visually inspected the expanded Safari gameplay screenshot. Real-device mobile testing remains a separate release gate.
