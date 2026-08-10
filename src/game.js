@@ -30,6 +30,40 @@ const MOVE_SPEED = 0.25;
 const LATITUDE_LIMIT = 0.31;
 const INTERACTION_DISTANCE = 2.7;
 
+const MODEL_SPANS = {
+  butterfly: 0.55, ladybug: 0.26, red_panda: 0.9, hedgehog: 0.55, songbird: 0.65, frog: 0.45, squirrel: 0.7,
+  camel: 1.65, fennec: 0.62, meerkat: 0.55, desert_tortoise: 0.78, roadrunner: 0.9, gecko: 0.42,
+  fish: 0.7, penguin: 1.05, polar_bear: 1.8, arctic_fox: 0.75, seal: 1.35, snowy_owl: 0.85, arctic_hare: 0.65, musk_ox: 1.55,
+  zebra: 1.6, giraffe: 2.9, elephant: 2.2, flamingo: 1.75, crab: 0.55, lion: 1.45, hippo: 1.7, warthog: 0.9, hornbill: 0.8,
+  windmill: 2.5, stone_bridge: 2.6, birdhouse: 1.55, picnic_shelter: 2.4,
+  oasis_well: 1.35, sandstone_ruins: 2.1, desert_tent: 1.8, wind_tower: 3.1,
+  igloo: 1.65, ice_bridge: 2.8, ranger_watchtower: 3.3, sled_station: 2.5,
+  lookout_tower: 3.1, water_trough: 1.65, rope_bridge: 2.9, safari_tent: 2.0,
+};
+
+const WEATHER = {
+  grassland: [
+    { id: 'meadow-breeze', label: 'Meadow breeze', kind: 'pollen', tint: 0xe9f7d5, fog: 63, sun: 1 },
+    { id: 'spring-shower', label: 'Spring shower', kind: 'rain', tint: 0x9fb6c6, fog: 38, sun: 0.66 },
+    { id: 'clear-meadow', label: 'Clear meadow', kind: 'none', tint: 0xffffff, fog: 72, sun: 1.12 },
+  ],
+  desert: [
+    { id: 'sun-haze', label: 'Sun haze', kind: 'haze', tint: 0xffe0a4, fog: 48, sun: 1.15 },
+    { id: 'dust-gust', label: 'Dust gust', kind: 'dust', tint: 0xdab06e, fog: 31, sun: 0.78 },
+    { id: 'clear-dunes', label: 'Clear dunes', kind: 'none', tint: 0xffffff, fog: 70, sun: 1.2 },
+  ],
+  snow: [
+    { id: 'crisp-air', label: 'Crisp air', kind: 'none', tint: 0xf0fbff, fog: 70, sun: 1.03 },
+    { id: 'gentle-snow', label: 'Gentle snow', kind: 'snow', tint: 0xddeeff, fog: 43, sun: 0.74 },
+    { id: 'frost-flurry', label: 'Frost flurry', kind: 'snow', tint: 0xc7d9ea, fog: 30, sun: 0.58 },
+  ],
+  safari: [
+    { id: 'golden-hour', label: 'Golden hour', kind: 'pollen', tint: 0xffdf9c, fog: 62, sun: 1.1 },
+    { id: 'savanna-rain', label: 'Savanna rain', kind: 'rain', tint: 0xa7b8b8, fog: 40, sun: 0.65 },
+    { id: 'dry-wind', label: 'Dry wind', kind: 'dust', tint: 0xe7bd72, fog: 42, sun: 0.86 },
+  ],
+};
+
 function hexToNumber(color) {
   return Number.parseInt(color.replace('#', ''), 16);
 }
@@ -513,10 +547,10 @@ export class GlobularRoamGame {
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 1.08;
+    this.renderer.toneMappingExposure = 1.32;
     this.ui['canvas-mount'].appendChild(this.renderer.domElement);
 
-    this.hemiLight = new THREE.HemisphereLight(0xfff7dd, 0x385c58, 2.2);
+    this.hemiLight = new THREE.HemisphereLight(0xffffff, 0x6d8c80, 3.4);
     this.scene.add(this.hemiLight);
     this.sunLight = new THREE.DirectionalLight(0xfff1c3, 3.2);
     this.sunLight.position.set(-9, 18, 12);
@@ -525,8 +559,12 @@ export class GlobularRoamGame {
     this.sunLight.shadow.camera.left = -20; this.sunLight.shadow.camera.right = 20;
     this.sunLight.shadow.camera.top = 20; this.sunLight.shadow.camera.bottom = -20;
     this.scene.add(this.sunLight);
+    this.fillLight = new THREE.DirectionalLight(0xd8ebff, 1.85);
+    this.fillLight.position.set(10, 9, 8);
+    this.scene.add(this.fillLight);
 
     this.createSkyDetails();
+    this.createWeatherSystem();
     this.createGlobe();
     this.player = makePlayer(this.save);
     this.scene.add(this.player);
@@ -567,6 +605,33 @@ export class GlobularRoamGame {
       this.clouds.add(cloud);
     }
     this.scene.add(this.clouds);
+  }
+
+  createWeatherSystem() {
+    this.weatherGroup = new THREE.Group();
+    this.weatherParticles = {};
+    const variants = {
+      pollen: { color: 0xffe7a7, size: 0.12, count: 96 },
+      rain: { color: 0xa8d9ff, size: 0.09, count: 160 },
+      snow: { color: 0xffffff, size: 0.16, count: 130 },
+      dust: { color: 0xe7bb77, size: 0.18, count: 120 },
+      haze: { color: 0xffe6b4, size: 0.34, count: 80 },
+    };
+    for (const [kind, config] of Object.entries(variants)) {
+      const positions = new Float32Array(config.count * 3);
+      for (let i = 0; i < config.count; i += 1) {
+        positions[i * 3] = (Math.random() - 0.5) * 19;
+        positions[i * 3 + 1] = Math.random() * 11 - 1;
+        positions[i * 3 + 2] = (Math.random() - 0.5) * 11;
+      }
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+      const points = new THREE.Points(geometry, new THREE.PointsMaterial({ color: config.color, size: config.size, transparent: true, opacity: 0.65, depthWrite: false }));
+      points.visible = false;
+      this.weatherParticles[kind] = points;
+      this.weatherGroup.add(points);
+    }
+    this.scene.add(this.weatherGroup);
   }
 
   createGlobe() {
@@ -620,7 +685,7 @@ export class GlobularRoamGame {
         positionOnGlobe(structure, biome.center + lonOffset, latitude);
         this.globe.add(structure);
         this.structures.push({ root: structure, structure: STRUCTURES[structureId] });
-        this.models.attach(modelIdForStructure(STRUCTURES[structureId]), structure, 2.2);
+        this.models.attach(modelIdForStructure(STRUCTURES[structureId]), structure, this.modelSpan(STRUCTURES[structureId], 2.1));
       }
 
       for (const [speciesId, lonOffset, latitude] of WORLD_LAYOUT[biomeId].wildlife) {
@@ -630,7 +695,7 @@ export class GlobularRoamGame {
         positionOnGlobe(subject.root, subject.longitude, subject.latitude, speciesId === 'fish' ? 0.14 : 0.05);
         this.globe.add(subject.root);
         this.wildlife.push(subject);
-        this.models.attach(modelIdForSpecies(subject.species), subject.visual, this.modelHeight(subject.species, 1.25));
+        this.models.attach(modelIdForSpecies(subject.species), subject.visual, this.modelSpan(subject.species, 1.05));
       }
       WORLD_LAYOUT[biomeId].collectibles.forEach(([itemId, lonOffset, latitude], index) => {
         const collectible = makeCollectible(COLLECTIBLES[itemId]);
@@ -640,16 +705,18 @@ export class GlobularRoamGame {
         positionOnGlobe(collectible.root, collectible.longitude, collectible.latitude, 0.05);
         this.globe.add(collectible.root);
         this.collectibles.push(collectible);
-        this.models.attach(modelIdForCollectible(collectible.item), collectible.root, 0.62);
+        this.models.attach(modelIdForCollectible(collectible.item), collectible.root, this.modelSpan(collectible.item, 0.56));
       });
     }
     this.updateGlobeOrientation();
   }
 
-  modelHeight(entity, fallback) {
-    if (entity.form === 'giraffe' || entity.form === 'tower') return 2.8;
-    if (entity.form === 'elephant' || entity.form === 'camel' || entity.form === 'musk_ox' || entity.form === 'hippo') return 1.65;
-    if (entity.form === 'butterfly' || entity.form === 'bug') return 0.55;
+  modelSpan(entity, fallback) {
+    if (MODEL_SPANS[entity.id]) return MODEL_SPANS[entity.id];
+    if (entity.form === 'berry' || entity.form === 'pearl' || entity.form === 'stone') return 0.38;
+    if (entity.form === 'reed' || entity.form === 'sprig') return 0.75;
+    if (entity.form === 'crystal' || entity.form === 'shell') return 0.52;
+    if (entity.form === 'fruit' || entity.form === 'mushroom' || entity.form === 'pod' || entity.form === 'pinecone') return 0.5;
     return fallback;
   }
 
@@ -1018,27 +1085,54 @@ export class GlobularRoamGame {
     }
   }
 
-  updateAtmosphere() {
+  updateAtmosphere(delta) {
     const phase = (0.25 + this.elapsed / 480) % 1;
     const daylight = 0.16 + Math.max(0, Math.sin(phase * Math.PI * 2)) * 0.84;
     const biomeSky = new THREE.Color(BIOMES[this.currentBiome].sky);
     const nightSky = new THREE.Color(0x24314a);
     const targetSky = nightSky.clone().lerp(biomeSky, daylight);
+    const forecast = WEATHER[this.currentBiome];
+    const weather = forecast[this.weatherOverride?.biomeId === this.currentBiome
+      ? this.weatherOverride.index % forecast.length
+      : Math.floor(this.elapsed / 32) % forecast.length];
+    const weatherTint = new THREE.Color(weather.tint);
+    targetSky.lerp(weatherTint, weather.kind === 'none' ? 0.03 : 0.14);
     this.scene.background.lerp(targetSky, 0.025);
     this.scene.fog.color.lerp(targetSky, 0.025);
-    this.hemiLight.intensity = 0.7 + daylight * 1.5;
-    this.sunLight.intensity = 0.55 + daylight * 2.65;
+    this.scene.fog.near = THREE.MathUtils.lerp(this.scene.fog.near, weather.fog * 0.42, 0.03);
+    this.scene.fog.far = THREE.MathUtils.lerp(this.scene.fog.far, weather.fog, 0.03);
+    this.hemiLight.intensity = (1.25 + daylight * 2.5) * weather.sun;
+    this.sunLight.intensity = (1.1 + daylight * 3.25) * weather.sun;
+    this.fillLight.intensity = (1.25 + daylight * 1.25) * weather.sun;
     this.stars.material.opacity = 0.12 + (1 - daylight) * 0.76;
     this.atmosphere = {
       phase,
       daylight,
-      weather: {
-        grassland: 'breezy',
-        desert: 'sun haze',
-        snow: 'crisp',
-        safari: 'golden',
-      }[this.currentBiome],
+      weather: weather.label,
+      weatherId: weather.id,
     };
+    this.updateWeatherParticles(weather, delta);
+  }
+
+  updateWeatherParticles(weather, delta) {
+    const reducedMotion = this.save.settings.reducedMotion;
+    this.weatherGroup.position.copy(this.camera.position);
+    this.weatherGroup.position.y -= 1.8;
+    for (const [kind, points] of Object.entries(this.weatherParticles)) {
+      points.visible = kind === weather.kind;
+      if (!points.visible || reducedMotion) continue;
+      const position = points.geometry.getAttribute('position');
+      const fall = kind === 'rain' ? 7 : kind === 'snow' ? 1.1 : kind === 'haze' ? 0.08 : 0.35;
+      const drift = kind === 'dust' || kind === 'haze' ? 1.4 : kind === 'pollen' ? 0.45 : 0.15;
+      for (let index = 0; index < position.count; index += 1) {
+        position.setY(index, position.getY(index) - fall * delta);
+        position.setX(index, position.getX(index) + drift * delta);
+        if (position.getY(index) < -4 || position.getX(index) > 10) {
+          position.setXYZ(index, -10 + Math.random() * 20, 7 + Math.random() * 6, -5 + Math.random() * 10);
+        }
+      }
+      position.needsUpdate = true;
+    }
   }
 
   step(delta) {
@@ -1052,7 +1146,7 @@ export class GlobularRoamGame {
     }
     this.updateCamera();
     this.updateWildlife(delta);
-    this.updateAtmosphere();
+    this.updateAtmosphere(delta);
     this.updateContext();
     this.updateBiome();
     if (!this.save.settings.reducedMotion) {
@@ -1185,6 +1279,17 @@ export class GlobularRoamGame {
     };
     window.__globularTest = {
       waitForModels: () => this.models.whenSettled(),
+      setWeather: (biomeId, index) => {
+        if (!WEATHER[biomeId] || !Number.isInteger(index)) return false;
+        this.weatherOverride = { biomeId, index };
+        this.currentBiome = biomeId;
+        this.previousBiome = biomeId;
+        this.save.longitude = BIOMES[biomeId].center;
+        this.updateGlobeOrientation();
+        this.updateAtmosphere(1 / 60);
+        this.render();
+        return true;
+      },
       teleportToBiome: (biomeId) => {
         this.save.longitude = BIOMES[biomeId].center;
         this.save.latitude = 0;

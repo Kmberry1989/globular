@@ -47,6 +47,17 @@ export class ModelLibrary {
           if (!node.isMesh) return;
           node.castShadow = true;
           node.receiveShadow = true;
+          for (const material of Array.isArray(node.material) ? node.material : [node.material]) {
+            if (!material?.isMeshStandardMaterial) continue;
+            // Most supplied GLBs were authored without an environment map. A
+            // gentle material lift keeps their painted low-poly color readable
+            // in shade without turning the scene into unlit flat art.
+            material.color.multiplyScalar(1.12);
+            material.emissive.copy(material.color).multiplyScalar(0.08);
+            material.emissiveIntensity = 0.45;
+            material.roughness = Math.max(material.roughness, 0.72);
+            material.metalness = 0;
+          }
         });
         this.templates.set(modelId, model);
         return model;
@@ -60,7 +71,7 @@ export class ModelLibrary {
     return pending;
   }
 
-  attach(modelId, root, height) {
+  attach(modelId, root, span) {
     return this.load(modelId).then((template) => {
       if (!template) return false;
       const model = template.clone(true);
@@ -68,7 +79,10 @@ export class ModelLibrary {
       const before = new THREE.Box3().setFromObject(model);
       const size = before.getSize(new THREE.Vector3());
       const longest = Math.max(size.x, size.y, size.z, 0.01);
-      model.scale.setScalar(height / longest);
+      // Asset source units differ wildly. Content supplies the intended largest
+      // world dimension, so a hare, giraffe, bridge, and watchtower retain a
+      // believable relationship regardless of the artist's export scale.
+      model.scale.setScalar(span / longest);
       model.rotation.y = Math.PI;
       model.updateMatrixWorld(true);
       const grounded = new THREE.Box3().setFromObject(model);

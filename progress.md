@@ -33,3 +33,9 @@ Original prompt: Implement the approved “Globular Roam: First Orbit” mobile-
 - Added the future-art `MODEL_ASSETS` registry plus `npm run assets:placeholders`, which safely creates 48 canonical, valid named GLB placeholders without overwriting existing art.
 - Extended content and persistence tests for catalog counts, placement integrity, unchanged requirements, and expanded save data. The full browser route now photographs and gathers one new entity per biome and checks world totals (30 wildlife, 29 collectibles, 16 structures).
 - Verified `npm run test:unit`, `npm run build`, `git diff --check`, and the isolated full browser route. Visually inspected the expanded Safari gameplay screenshot. Real-device mobile testing remains a separate release gate.
+
+## 2026-08-10
+
+- Replaced placeholder entity presentation with live Draco GLB loading and canonical model publishing.
+- Added semantic model spans to preserve realistic size relationships across animals, resources, and structures; strengthened sky/fill lighting and added biome forecasts with rain, snow, pollen, dust, and haze particles.
+- Verified the live Frost flurry with the deterministic weather hook: 64 GLBs loaded, zero failures, expected weather state, readable model lighting, and correctly scaled watchtower, bridge, animals, and resources. `npm run test:unit`, `npm run build`, and `git diff --check` pass. The legacy full smoke runner reached the fourth biome again but did not emit its completion marker in this host session; the deterministic live weather check is the completed browser proof for this pass.
