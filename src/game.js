@@ -21,6 +21,7 @@ import {
 } from './persistence.js';
 import { PhotographySystem } from './photography.js';
 import { calculateInventoryValue, isBiomeRequestComplete } from './progression.js';
+import { ModelLibrary, modelIdForCollectible, modelIdForSpecies, modelIdForStructure } from './model-assets.js';
 
 const cameraSoundUrl = new URL('../sounds/camera.wav', import.meta.url).href;
 const GLOBE_RADIUS = 28;
@@ -326,13 +327,15 @@ function makeWildlife(species) {
     focusHeight = isBear ? 0.75 : 0.85;
   }
   animal.rotation.y = Math.PI;
-  root.add(animal);
+  const visual = new THREE.Group();
+  visual.add(animal);
+  root.add(visual);
   const focus = new THREE.Object3D();
   focus.position.y = focusHeight;
   root.add(focus);
   root.userData.kind = 'wildlife';
   root.userData.speciesId = species.id;
-  return { root, animal, focus, species, phase: Math.random() * Math.PI * 2 };
+  return { root, animal, visual, focus, species, phase: Math.random() * Math.PI * 2 };
 }
 
 function makeCollectible(item) {
@@ -487,6 +490,7 @@ export class GlobularRoamGame {
     this.audioContext = null;
     this.cameraAudio = new Audio(cameraSoundUrl);
     this.cameraAudio.preload = 'auto';
+    this.models = new ModelLibrary();
     this.createScene();
     this.bindUI();
     this.bindKeyboard();
@@ -616,6 +620,7 @@ export class GlobularRoamGame {
         positionOnGlobe(structure, biome.center + lonOffset, latitude);
         this.globe.add(structure);
         this.structures.push({ root: structure, structure: STRUCTURES[structureId] });
+        this.models.attach(modelIdForStructure(STRUCTURES[structureId]), structure, 2.2);
       }
 
       for (const [speciesId, lonOffset, latitude] of WORLD_LAYOUT[biomeId].wildlife) {
@@ -625,6 +630,7 @@ export class GlobularRoamGame {
         positionOnGlobe(subject.root, subject.longitude, subject.latitude, speciesId === 'fish' ? 0.14 : 0.05);
         this.globe.add(subject.root);
         this.wildlife.push(subject);
+        this.models.attach(modelIdForSpecies(subject.species), subject.visual, this.modelHeight(subject.species, 1.25));
       }
       WORLD_LAYOUT[biomeId].collectibles.forEach(([itemId, lonOffset, latitude], index) => {
         const collectible = makeCollectible(COLLECTIBLES[itemId]);
@@ -634,9 +640,17 @@ export class GlobularRoamGame {
         positionOnGlobe(collectible.root, collectible.longitude, collectible.latitude, 0.05);
         this.globe.add(collectible.root);
         this.collectibles.push(collectible);
+        this.models.attach(modelIdForCollectible(collectible.item), collectible.root, 0.62);
       });
     }
     this.updateGlobeOrientation();
+  }
+
+  modelHeight(entity, fallback) {
+    if (entity.form === 'giraffe' || entity.form === 'tower') return 2.8;
+    if (entity.form === 'elephant' || entity.form === 'camel' || entity.form === 'musk_ox' || entity.form === 'hippo') return 1.65;
+    if (entity.form === 'butterfly' || entity.form === 'bug') return 0.55;
+    return fallback;
   }
 
   bindUI() {
@@ -989,7 +1003,7 @@ export class GlobularRoamGame {
     for (const subject of this.wildlife) {
       subject.phase += delta;
       const bob = reducedMotion ? 0 : Math.sin(subject.phase * 2.1) * 0.035;
-      subject.animal.position.y = bob;
+      subject.visual.position.y = bob;
       const leftWing = subject.animal.getObjectByName('wing-left');
       const rightWing = subject.animal.getObjectByName('wing-right');
       if (leftWing && rightWing) {
@@ -1153,6 +1167,7 @@ export class GlobularRoamGame {
         wildlife: this.wildlife.length,
         collectibles: this.collectibles.filter((entry) => !entry.collected).length,
         structures: this.structures.length,
+        models: this.models.status(),
       },
       settings: { ...this.save.settings },
       bells: this.save.bells,
@@ -1169,6 +1184,7 @@ export class GlobularRoamGame {
       this.manualStepping = false;
     };
     window.__globularTest = {
+      waitForModels: () => this.models.whenSettled(),
       teleportToBiome: (biomeId) => {
         this.save.longitude = BIOMES[biomeId].center;
         this.save.latitude = 0;

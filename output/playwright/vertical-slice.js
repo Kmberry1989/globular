@@ -74,6 +74,9 @@ await page.evaluate(() => {
 await page.reload({ waitUntil: 'networkidle' });
 await page.waitForLoadState('networkidle');
 await page.waitForFunction(() => typeof window.render_game_to_text === 'function');
+const modelStatus = await page.evaluate(() => window.__globularTest.waitForModels());
+assert.equal(modelStatus.failed.length, 0, `GLB loads should succeed: ${modelStatus.failed.join(', ')}`);
+assert.ok(modelStatus.loaded >= 40, 'the active entity catalog should load its GLB library');
 
 await clickForce('#start-button');
 await page.waitForSelector('#modal-layer:not(.hidden)');
