@@ -1,8 +1,8 @@
 # Globular Roam — First Orbit
 
-A mobile-first cozy photography expedition built with Vite and Three.js.
+A mobile-first cozy first-person photography expedition built with Vite and Three.js.
 
-Travel around a seamless tiny planet, photograph wildlife, insects, plants, trees, finds, and landmarks, gather natural treasures, help four local rangers, fill a persistent field guide, and return home after earning every biome stamp.
+Travel around a seamless tiny planet from an eye-height explorer view, photograph wildlife, insects, plants, trees, finds, and landmarks, gather natural treasures, help four local rangers, fill a persistent field guide, and return home after earning every biome stamp.
 
 ## Run locally
 
@@ -33,6 +33,8 @@ Open the local address shown by Vite.
 5. Return to Mira in Clover Commons to complete First Orbit.
 
 Wildlife is recorded through photography and is never added to inventory. Plants, trees, finds, structures, fish, and shoreline creatures are also photographable field-guide subjects; there is no fishing mechanic.
+
+The playable camera is first-person in both roaming and camera mode. The modular player body is hidden during normal play to avoid self-occlusion; `models/player.glb` remains available as a legacy roamer mannequin/reference model.
 
 ## Asset Direction
 

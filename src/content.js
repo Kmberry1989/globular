@@ -291,7 +291,7 @@ export const STRUCTURES = {
   palm_tree: { id: 'palm_tree', name: 'Oasis Date Palm', biome: 'desert', color: 0x6f9d5d, accent: 0x8b5a32, form: 'tree', note: 'A tall palm with fan-like leaves and a warm desert trunk.' },
   pine_tree: { id: 'pine_tree', name: 'Frost Pine', biome: 'snow', color: 0x7eb2a9, accent: 0x6d5745, form: 'tree', note: 'A conical evergreen with snow-dusted layered branches.' },
   baobab_tree: { id: 'baobab_tree', name: 'Riverland Baobab', biome: 'safari', color: 0x8f9046, accent: 0x8b6138, form: 'tree', note: 'A thick-trunked savanna tree with a flattened leafy crown.' },
-  legacy_player_model: { id: 'legacy_player_model', name: 'Legacy Roamer Mannequin', biome: 'grassland', color: 0x4b91c7, accent: 0xd8b48a, form: 'statue', model: 'player', note: 'The old single-piece player model is now a reference mannequin while the live player moves to modular parts.' },
+  legacy_player_model: { id: 'legacy_player_model', name: 'Legacy Roamer Mannequin', biome: 'safari', color: 0x4b91c7, accent: 0xd8b48a, form: 'statue', model: 'player', note: 'The old single-piece player model is now a reference mannequin while the live player moves to modular parts.' },
 };
 
 const MODEL_FILE_OVERRIDES = {
@@ -385,7 +385,7 @@ export const WORLD_LAYOUT = {
   grassland: {
     wildlife: [['butterfly', -0.055, -0.045], ['ladybug', 0.075, 0.025], ['red_panda', 0.14, -0.06], ['hedgehog', -0.18, 0.1], ['songbird', -0.24, -0.08], ['frog', 0.205, 0.085], ['squirrel', 0.255, -0.02], ['willow_wren', -0.305, -0.125], ['cardinal', -0.33, 0.025], ['blue_jay', 0.325, 0.075], ['ruby_throated_hummingbird', 0.32, -0.105], ['firefly', -0.16, -0.125], ['bumblebee', 0.17, 0.145], ['koala', 0.03, 0.145]],
     collectibles: [['starflower', -0.025, 0.02], ['starflower', 0.055, -0.025], ['starflower', 0.125, 0.07], ['apple', -0.12, 0.06], ['clover_mushroom', -0.2, -0.03], ['acorn', 0.19, -0.11], ['dewberry', 0.235, 0.12], ['wild_mint', -0.27, 0.03], ['daisy', -0.34, 0.11]],
-    structures: [['windmill', -0.29, 0.13], ['stone_bridge', -0.12, -0.14], ['birdhouse', 0.28, 0.14], ['picnic_shelter', 0.22, -0.14], ['bush', -0.335, -0.055], ['oak_tree', 0.335, -0.15], ['legacy_player_model', 0.08, -0.155]],
+    structures: [['windmill', -0.29, 0.13], ['stone_bridge', -0.12, -0.14], ['birdhouse', 0.28, 0.14], ['picnic_shelter', 0.22, -0.14], ['bush', -0.335, -0.055], ['oak_tree', 0.335, -0.15]],
   },
   desert: {
     wildlife: [['camel', -0.045, -0.025], ['fennec', 0.085, 0.05], ['fish', 0.14, -0.075], ['meerkat', -0.19, 0.09], ['desert_tortoise', -0.25, -0.05], ['roadrunner', 0.21, 0.1], ['gecko', 0.27, -0.02], ['red_tailed_hawk', -0.315, -0.115], ['dragonfly', 0.32, 0.105]],
@@ -400,7 +400,7 @@ export const WORLD_LAYOUT = {
   safari: {
     wildlife: [['zebra', -0.07, 0.02], ['giraffe', 0.025, -0.045], ['elephant', 0.105, 0.045], ['flamingo', 0.17, -0.07], ['crab', -0.15, -0.07], ['lion', -0.26, 0.1], ['lion_variant', -0.335, 0.14], ['hippo', -0.22, -0.12], ['warthog', 0.23, 0.12], ['hornbill', 0.28, -0.01], ['ostrich', -0.335, -0.12], ['monkey', 0.335, 0.04], ['feline', 0.05, 0.145], ['grasshopper', -0.06, -0.145]],
     collectibles: [['fallen_feather', -0.025, -0.025], ['fallen_feather', 0.14, 0.07], ['seed_pod', 0.055, 0.055], ['baobab_pod', -0.2, 0.01], ['amber_bead', 0.21, -0.1], ['river_reed', 0.245, 0.12], ['painted_stone', -0.27, 0.1], ['savanna_lily', -0.335, 0.02], ['orange', 0.335, -0.085]],
-    structures: [['lookout_tower', -0.3, 0.14], ['water_trough', -0.12, -0.14], ['rope_bridge', 0.28, 0.13], ['safari_tent', 0.22, -0.14], ['safari_tent_variant', 0.335, -0.135], ['baobab_tree', -0.335, 0.115]],
+    structures: [['lookout_tower', -0.3, 0.14], ['water_trough', -0.12, -0.14], ['rope_bridge', 0.28, 0.13], ['safari_tent', 0.22, -0.14], ['safari_tent_variant', 0.335, -0.135], ['baobab_tree', -0.335, 0.115], ['legacy_player_model', -0.335, -0.145]],
   },
 };
 

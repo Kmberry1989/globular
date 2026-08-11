@@ -2,11 +2,11 @@
 
 ## Product
 
-Globular Roam: First Orbit is a mobile-first cozy field-guide photography game.
-Players travel around one seamless tiny planet, photograph wildlife, insects,
-plants, trees, finds, and landmarks, gather natural treasures, help four
-rangers, fill a persistent field guide, and return to Clover Commons for the
-finale.
+Globular Roam: First Orbit is a mobile-first cozy first-person field-guide
+photography game. Players travel around one seamless tiny planet, photograph
+wildlife, insects, plants, trees, finds, and landmarks, gather natural
+treasures, help four rangers, fill a persistent field guide, and return to
+Clover Commons for the finale.
 
 Wildlife is photographed and never collected as inventory. Plants, trees, finds,
 structures, fish, and shoreline animals are also field-guide subjects; there is
@@ -35,6 +35,11 @@ replacement slots. Root `models/*.glb` files are active runtime assets owned by
 `MODEL_ASSETS`, `WORLD_PROP_ASSETS`, or `CHARACTER_MODEL_ASSETS`; keep new model
 paths represented in those registries and placed in `WORLD_LAYOUT` when they
 should appear in-game.
+
+Roaming and camera mode both use an eye-height first-person camera. Keep the
+playable player body hidden during those modes so hats, heads, backpacks, and
+legacy mannequin geometry do not block the view. `window.render_game_to_text()`
+should continue to report the active first-person view state for browser proof.
 
 `models/bird.glb` is intentionally the specific `willow_wren` model. The live
 player remains modular/procedural; `models/player.glb` is used as a legacy

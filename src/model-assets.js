@@ -87,7 +87,9 @@ export class ModelLibrary {
       model.updateMatrixWorld(true);
       const grounded = new THREE.Box3().setFromObject(model);
       model.position.y -= grounded.min.y;
+      const preserved = root.children.filter((child) => child.userData?.preserveModelAttach);
       root.clear();
+      for (const child of preserved) root.add(child);
       root.add(model);
       root.userData.modelId = modelId;
       return true;

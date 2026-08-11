@@ -30,6 +30,10 @@ const PLAYER_POSITION = new THREE.Vector3(0, 0, 0);
 const MOVE_SPEED = 0.25;
 const LATITUDE_LIMIT = 0.31;
 const INTERACTION_DISTANCE = 2.7;
+const FIRST_PERSON_EYE = new THREE.Vector3(0, 1.55, -0.48);
+const FIRST_PERSON_LOOK = new THREE.Vector3(0, 0.12, 7.1);
+const FIRST_PERSON_CAMERA_EYE = new THREE.Vector3(0, 1.5, -0.34);
+const FIRST_PERSON_CAMERA_LOOK = new THREE.Vector3(0, 0, 7.6);
 
 const MODEL_SPANS = {
   butterfly: 0.55, ladybug: 0.26, red_panda: 0.9, hedgehog: 0.55, songbird: 0.65, frog: 0.45, squirrel: 0.7,
@@ -46,7 +50,7 @@ const MODEL_SPANS = {
   lookout_tower: 3.1, water_trough: 1.65, rope_bridge: 2.9, safari_tent: 2.0, safari_tent_variant: 1.8,
   bush: 1.0, oak_tree: 2.5, palm_tree: 2.6, pine_tree: 2.4, baobab_tree: 3.2, legacy_player_model: 1.9,
   daisy: 0.42, desert_marigold: 0.44, arctic_poppy: 0.36, savanna_lily: 0.5, orange: 0.4, coin: 0.32,
-  ranger_grassland: 1.75, ranger_desert: 1.8, ranger_snow: 1.85, ranger_safari: 1.9, camera: 0.46,
+  ranger_grassland: 1.25, ranger_desert: 1.3, ranger_snow: 1.35, ranger_safari: 1.35, camera: 0.46,
 };
 
 const WEATHER = {
@@ -385,9 +389,11 @@ function makeWildlife(species) {
 
 function makeCollectible(item) {
   const root = new THREE.Group();
+  const visual = new THREE.Group();
+  root.add(visual);
   if (item.form === 'flower' || item.id.includes('flower') || item.id === 'sunpetal' || item.id === 'snowdrop') {
     const stem = mesh(new THREE.CylinderGeometry(0.025, 0.035, 0.42, 6), 0x4e913f, { y: 0.21 });
-    root.add(stem);
+    visual.add(stem);
     const petals = item.id === 'sunpetal' ? 9 : 6;
     for (let i = 0; i < petals; i += 1) {
       const petal = mesh(new THREE.SphereGeometry(0.1, 6, 5), item.color, { y: 0.5 });
@@ -395,44 +401,45 @@ function makeCollectible(item) {
       petal.position.x = Math.cos(angle) * 0.14;
       petal.position.z = Math.sin(angle) * 0.14;
       petal.scale.set(1.3, 0.45, 0.7);
-      root.add(petal);
+      visual.add(petal);
     }
   } else if (item.id === 'apple') {
-    root.add(mesh(new THREE.SphereGeometry(0.22, 8, 7), item.color, { y: 0.26 }));
+    visual.add(mesh(new THREE.SphereGeometry(0.22, 8, 7), item.color, { y: 0.26 }));
   } else if (item.id.includes('glass')) {
-    root.add(mesh(new THREE.OctahedronGeometry(0.3, 0), item.color, { y: 0.3 }));
+    visual.add(mesh(new THREE.OctahedronGeometry(0.3, 0), item.color, { y: 0.3 }));
   } else if (item.id.includes('feather')) {
     const feather = mesh(new THREE.CapsuleGeometry(0.08, 0.38, 4, 7), item.color, { y: 0.28 });
     feather.rotation.z = -0.5;
-    root.add(feather);
+    visual.add(feather);
   } else if (item.form === 'mushroom') {
-    root.add(mesh(new THREE.CylinderGeometry(0.07, 0.09, 0.28, 7), 0xf1e7ce, { y: 0.14 }));
-    root.add(mesh(new THREE.SphereGeometry(0.22, 8, 6), item.color, { y: 0.31 }));
+    visual.add(mesh(new THREE.CylinderGeometry(0.07, 0.09, 0.28, 7), 0xf1e7ce, { y: 0.14 }));
+    visual.add(mesh(new THREE.SphereGeometry(0.22, 8, 6), item.color, { y: 0.31 }));
   } else if (item.form === 'acorn' || item.form === 'pod' || item.form === 'pinecone') {
     const shape = mesh(new THREE.SphereGeometry(0.22, 8, 7), item.color, { y: 0.23 });
-    shape.scale.y = item.form === 'pinecone' ? 1.35 : 1.1; root.add(shape);
-    root.add(mesh(new THREE.CylinderGeometry(0.14, 0.18, 0.09, 7), 0x5d4a32, { y: 0.42 }));
+    shape.scale.y = item.form === 'pinecone' ? 1.35 : 1.1; visual.add(shape);
+    visual.add(mesh(new THREE.CylinderGeometry(0.14, 0.18, 0.09, 7), 0x5d4a32, { y: 0.42 }));
   } else if (item.form === 'berry') {
-    for (const [x, z] of [[0, 0], [-0.12, 0.06], [0.12, 0.06], [0, -0.11]]) root.add(mesh(new THREE.SphereGeometry(0.11, 7, 6), item.color, { y: 0.24 }).translateX(x).translateZ(z));
+    for (const [x, z] of [[0, 0], [-0.12, 0.06], [0.12, 0.06], [0, -0.11]]) visual.add(mesh(new THREE.SphereGeometry(0.11, 7, 6), item.color, { y: 0.24 }).translateX(x).translateZ(z));
   } else if (item.form === 'sprig' || item.form === 'reed') {
-    for (const x of [-0.09, 0, 0.09]) { const blade = mesh(new THREE.CapsuleGeometry(0.025, item.form === 'reed' ? 0.54 : 0.38, 4, 5), item.color, { y: item.form === 'reed' ? 0.3 : 0.22 }); blade.position.x = x; blade.rotation.z = x * 2; root.add(blade); }
+    for (const x of [-0.09, 0, 0.09]) { const blade = mesh(new THREE.CapsuleGeometry(0.025, item.form === 'reed' ? 0.54 : 0.38, 4, 5), item.color, { y: item.form === 'reed' ? 0.3 : 0.22 }); blade.position.x = x; blade.rotation.z = x * 2; visual.add(blade); }
   } else if (item.form === 'fruit' || item.form === 'pearl' || item.form === 'coin') {
-    root.add(mesh(new THREE.SphereGeometry(item.form === 'pearl' ? 0.2 : 0.24, 8, 7), item.color, { y: 0.24 }));
+    visual.add(mesh(new THREE.SphereGeometry(item.form === 'pearl' ? 0.2 : 0.24, 8, 7), item.color, { y: 0.24 }));
   } else if (item.form === 'crystal') {
-    const crystal = mesh(new THREE.OctahedronGeometry(0.28, 0), item.color, { y: 0.28 }); crystal.scale.y = 1.5; root.add(crystal);
+    const crystal = mesh(new THREE.OctahedronGeometry(0.28, 0), item.color, { y: 0.28 }); crystal.scale.y = 1.5; visual.add(crystal);
   } else if (item.form === 'shell') {
-    const shell = mesh(new THREE.SphereGeometry(0.26, 8, 6), item.color, { y: 0.2 }); shell.scale.set(1.25, 0.42, 1); root.add(shell);
+    const shell = mesh(new THREE.SphereGeometry(0.26, 8, 6), item.color, { y: 0.2 }); shell.scale.set(1.25, 0.42, 1); visual.add(shell);
   } else if (item.form === 'stone') {
-    root.add(mesh(new THREE.DodecahedronGeometry(0.25, 0), item.color, { y: 0.22 }));
+    visual.add(mesh(new THREE.DodecahedronGeometry(0.25, 0), item.color, { y: 0.22 }));
   } else {
-    root.add(mesh(new THREE.DodecahedronGeometry(0.24, 0), item.color, { y: 0.22 }));
+    visual.add(mesh(new THREE.DodecahedronGeometry(0.24, 0), item.color, { y: 0.22 }));
   }
   root.userData.kind = 'collectible';
   root.userData.itemId = item.id;
   const focus = new THREE.Object3D();
+  focus.userData.preserveModelAttach = true;
   focus.position.y = item.form === 'reed' || item.form === 'sprig' ? 0.58 : 0.34;
   root.add(focus);
-  return { root, focus, item, photoSubject: PHOTO_SUBJECTS[item.id], collected: false, phase: Math.random() * Math.PI * 2 };
+  return { root, visual, focus, item, photoSubject: PHOTO_SUBJECTS[item.id], collected: false, phase: Math.random() * Math.PI * 2 };
 }
 
 function makeStructure(structure) {
@@ -480,6 +487,7 @@ function makeStructure(structure) {
   }
   root.userData.kind = 'structure'; root.userData.structureId = structure.id;
   const focus = new THREE.Object3D();
+  focus.userData.preserveModelAttach = true;
   focus.position.y = form === 'tree' ? 1.55 : form === 'tower' ? 1.8 : form === 'statue' ? 1.25 : 0.75;
   root.add(focus);
   return { root, focus, structure, photoSubject: PHOTO_SUBJECTS[structure.id] };
@@ -567,9 +575,9 @@ export class GlobularRoamGame {
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(BIOMES[this.currentBiome].sky);
     this.scene.fog = new THREE.Fog(BIOMES[this.currentBiome].sky, 22, 72);
-    this.camera = new THREE.PerspectiveCamera(58, window.innerWidth / window.innerHeight, 0.1, 220);
-    this.camera.position.set(0, 6.8, 11.8);
-    this.camera.lookAt(0, 0.9, 0);
+    this.camera = new THREE.PerspectiveCamera(62, window.innerWidth / window.innerHeight, 0.1, 220);
+    this.camera.position.copy(FIRST_PERSON_EYE);
+    this.camera.lookAt(FIRST_PERSON_LOOK);
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'high-performance' });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.7));
     this.renderer.setSize(window.innerWidth, window.innerHeight);
@@ -598,6 +606,7 @@ export class GlobularRoamGame {
     this.createGlobe();
     this.player = makePlayer(this.save);
     this.scene.add(this.player);
+    this.syncPlayerViewVisibility();
     this.models.attach('camera', this.player.getObjectByName('held-camera-slot'), this.modelSpan({ id: 'camera' }, 0.46));
     this.photography = new PhotographySystem({
       renderer: this.renderer,
@@ -755,7 +764,7 @@ export class GlobularRoamGame {
         this.globe.add(collectible.root);
         this.collectibles.push(collectible);
         this.photoSubjects.push(collectible);
-        this.models.attach(modelIdForCollectible(collectible.item), collectible.root, this.modelSpan(collectible.item, 0.56));
+        this.models.attach(modelIdForCollectible(collectible.item), collectible.visual, this.modelSpan(collectible.item, 0.56));
       });
     }
     this.updateGlobeOrientation();
@@ -817,6 +826,8 @@ export class GlobularRoamGame {
       this.player.removeFromParent();
       this.player = makePlayer(this.save);
       this.scene.add(this.player);
+      this.syncPlayerViewVisibility();
+      this.models.attach('camera', this.player.getObjectByName('held-camera-slot'), this.modelSpan({ id: 'camera' }, 0.46));
       this.ui.applySettings(this.save.settings);
     }
     this.save.started = true;
@@ -861,9 +872,10 @@ export class GlobularRoamGame {
     if (this.mode !== 'roaming') return;
     this.mode = 'camera';
     this.photography.resetAim();
-    this.camera.fov = 44;
+    this.camera.fov = 50;
     this.camera.updateProjectionMatrix();
-    this.player.visible = false;
+    this.syncPlayerViewVisibility();
+    this.alignForcedCameraAim();
     this.ui.setCameraMode(true);
     this.playSound('cameraOpen');
   }
@@ -871,11 +883,70 @@ export class GlobularRoamGame {
   closeCamera() {
     if (this.mode !== 'camera') return;
     this.mode = 'roaming';
-    this.camera.fov = 58;
+    this.camera.fov = 62;
     this.camera.updateProjectionMatrix();
-    this.player.visible = true;
+    this.syncPlayerViewVisibility();
     this.photography.forceSubject(null);
     this.ui.setCameraMode(false);
+  }
+
+  syncPlayerViewVisibility() {
+    if (!this.player) return;
+    this.player.visible = this.mode !== 'roaming' && this.mode !== 'camera';
+  }
+
+  alignForcedCameraAim() {
+    if (!this.photography.forcedSubjectId) return;
+    for (let step = 0; step < 8; step += 1) {
+      this.updateCamera();
+      const focus = this.photography.update(PLAYER_POSITION);
+      const focusId = focus?.subject.photoSubject?.id || focus?.subject.species?.id;
+      if (focusId !== this.photography.forcedSubjectId) return;
+      if (focus.valid) return;
+      this.photography.adjustAim(-focus.screen.x * 0.55, focus.screen.y * 0.42);
+    }
+  }
+
+  framePhotoSubjectForTest(subject, subjectId) {
+    if (!Number.isFinite(subject.longitude) || !Number.isFinite(subject.latitude)) return false;
+    const shifts = [-0.24, -0.18, -0.12, -0.06, 0, 0.06, 0.12, 0.18, 0.24, 0.3];
+    let best = null;
+    for (const longitudeShift of shifts) {
+      for (const latitudeShift of shifts) {
+        this.save.longitude = normalizeLongitude(subject.longitude + longitudeShift);
+        this.save.latitude = THREE.MathUtils.clamp(subject.latitude + latitudeShift, -LATITUDE_LIMIT, LATITUDE_LIMIT);
+        this.updateGlobeOrientation();
+        this.scene.updateMatrixWorld(true);
+        this.camera.position.copy(FIRST_PERSON_CAMERA_EYE);
+        this.camera.lookAt(FIRST_PERSON_CAMERA_LOOK);
+        this.camera.updateMatrixWorld();
+        this.photography.resetAim();
+        this.photography.forceSubject(subjectId);
+        const focus = this.photography.update(PLAYER_POSITION);
+        const focusId = focus?.subject.photoSubject?.id || focus?.subject.species?.id;
+        if (focusId !== subjectId) continue;
+        const score = focus.centerDistance + (focus.valid ? -1 : 1) + Math.max(0, focus.distance - 9.5);
+        if (!best || score < best.score) {
+          best = {
+            longitude: this.save.longitude,
+            latitude: this.save.latitude,
+            score,
+          };
+        }
+      }
+    }
+    if (!best) return false;
+    this.save.longitude = best.longitude;
+    this.save.latitude = best.latitude;
+    this.updateGlobeOrientation();
+    this.scene.updateMatrixWorld(true);
+    this.updateBiome();
+    this.photography.resetAim();
+    this.photography.forceSubject(subjectId);
+    this.updateCamera();
+    this.photography.update(PLAYER_POSITION);
+    this.render();
+    return true;
   }
 
   async takePhoto() {
@@ -1107,14 +1178,17 @@ export class GlobularRoamGame {
   }
 
   updateCamera() {
+    this.syncPlayerViewVisibility();
     if (this.mode === 'camera') {
-      const target = new THREE.Vector3(this.photography.aim.x * 4.8, 0.95 + this.photography.aim.y * 3.2, 0);
-      this.camera.position.lerp(new THREE.Vector3(0, 4.25, 7.3), 0.18);
+      const target = FIRST_PERSON_CAMERA_LOOK.clone();
+      target.x += this.photography.aim.x * 4.8;
+      target.y += this.photography.aim.y * 3.2;
+      this.camera.position.lerp(FIRST_PERSON_CAMERA_EYE, 0.32);
       this.camera.lookAt(target);
       this.photography.update(PLAYER_POSITION);
     } else {
-      this.camera.position.lerp(new THREE.Vector3(0, 6.8, 11.8), 0.08);
-      this.camera.lookAt(0, 0.9, 0);
+      this.camera.position.lerp(FIRST_PERSON_EYE, 0.22);
+      this.camera.lookAt(FIRST_PERSON_LOOK);
     }
   }
 
@@ -1139,12 +1213,16 @@ export class GlobularRoamGame {
   }
 
   updateAtmosphere(delta) {
+    if (!WEATHER[this.currentBiome]) {
+      this.currentBiome = Number.isFinite(this.save.longitude) ? biomeForLongitude(this.save.longitude) : 'grassland';
+    }
+    if (!WEATHER[this.currentBiome]) this.currentBiome = 'grassland';
     const phase = (0.25 + this.elapsed / 480) % 1;
     const daylight = 0.16 + Math.max(0, Math.sin(phase * Math.PI * 2)) * 0.84;
     const biomeSky = new THREE.Color(BIOMES[this.currentBiome].sky);
     const nightSky = new THREE.Color(0x24314a);
     const targetSky = nightSky.clone().lerp(biomeSky, daylight);
-    const forecast = WEATHER[this.currentBiome];
+    const forecast = WEATHER[this.currentBiome] || WEATHER.grassland;
     const weather = forecast[this.weatherOverride?.biomeId === this.currentBiome
       ? this.weatherOverride.index % forecast.length
       : Math.floor(this.elapsed / 32) % forecast.length];
@@ -1293,6 +1371,15 @@ export class GlobularRoamGame {
         latitude: Number(this.save.latitude.toFixed(4)),
         biome: this.currentBiome,
       },
+      view: {
+        perspective: 'first-person',
+        cameraPosition: {
+          x: Number(this.camera.position.x.toFixed(2)),
+          y: Number(this.camera.position.y.toFixed(2)),
+          z: Number(this.camera.position.z.toFixed(2)),
+        },
+        playerBodyVisible: Boolean(this.player?.visible),
+      },
       expedition: {
         chapter: currentChapter(this.save.stamps),
         stamps: this.save.stamps,
@@ -1356,30 +1443,12 @@ export class GlobularRoamGame {
       frameSpecies: (speciesId) => {
         const subject = this.wildlife.find((entry) => entry.species.id === speciesId);
         if (!subject) return false;
-        this.save.longitude = normalizeLongitude(subject.longitude);
-        this.save.latitude = subject.latitude - 0.025;
-        this.updateGlobeOrientation();
-        this.updateBiome();
-        this.photography.resetAim();
-        this.photography.forceSubject(speciesId);
-        this.updateCamera();
-        this.photography.update(PLAYER_POSITION);
-        this.render();
-        return true;
+        return this.framePhotoSubjectForTest(subject, speciesId);
       },
       frameSubject: (subjectId) => {
         const subject = this.photoSubjects.find((entry) => entry.photoSubject?.id === subjectId && !entry.collected);
         if (!subject) return false;
-        this.save.longitude = normalizeLongitude(subject.longitude);
-        this.save.latitude = subject.latitude - 0.025;
-        this.updateGlobeOrientation();
-        this.updateBiome();
-        this.photography.resetAim();
-        this.photography.forceSubject(subjectId);
-        this.updateCamera();
-        this.photography.update(PLAYER_POSITION);
-        this.render();
-        return true;
+        return this.framePhotoSubjectForTest(subject, subjectId);
       },
       approachCollectible: (itemId) => {
         const collectible = this.collectibles.find((entry) => entry.item.id === itemId && !entry.collected);

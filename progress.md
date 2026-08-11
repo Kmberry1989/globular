@@ -54,3 +54,12 @@ Original prompt: Implement the approved “Globular Roam: First Orbit” mobile-
 - Converted the photo system from wildlife-only to shared photo subjects, so plants, trees, finds, structures, and landmarks can save photos into the field guide alongside animals while First Orbit requirements remain unchanged.
 - Wired `ranger_grassland`, `ranger_desert`, `ranger_snow`, `ranger_safari`, and `camera` as runtime model slots. The live player remains modular; `models/player.glb` is used as a legacy roamer mannequin/reference model.
 - Added concept sheets in `concept-art/asset-roadmap-sheets/` for bird expansion, insect/plant/tree variants, and modular character parts. Future GLB replacements should use those sheets plus `ASSET_PROP_SHEET.md`.
+
+## 2026-08-11 — first-person perspective pass
+
+- Converted roaming and camera mode from a third-person chase/orbit presentation to an eye-height first-person view while preserving the existing tiny-planet movement, biome progression, gathering, and photo-subject systems.
+- Hid the procedural player body during roaming and camera mode so the modular character/legacy mannequin geometry does not occlude the view. `models/player.glb` remains available for non-playable/reference use.
+- Added first-person view state to `window.render_game_to_text()` so browser tests and future QA can confirm the active perspective, camera position, and player-body visibility.
+- Kept the runtime camera model attached when a fresh expedition rebuilds the player rig, preserving active use of the camera asset slot.
+- Split collectible visuals from their photo focus markers and preserved structure focus markers during GLB replacement, so first-person photo targeting still works after model swaps for plants, trees, finds, and landmarks.
+- Reduced ranger GLB spans for first-person readability, moved the legacy mannequin out of the opening biome, and guarded atmosphere updates against invalid transient test coordinates.
