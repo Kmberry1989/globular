@@ -49,7 +49,11 @@ const MODEL_SPANS = {
   igloo: 1.65, ice_bridge: 2.8, ranger_watchtower: 3.3, ranger_watchtower_variant: 3.1, sled_station: 2.5,
   lookout_tower: 3.1, water_trough: 1.65, rope_bridge: 2.9, safari_tent: 2.0, safari_tent_variant: 1.8,
   bush: 1.0, oak_tree: 2.5, palm_tree: 2.6, pine_tree: 2.4, baobab_tree: 3.2, legacy_player_model: 1.9,
-  daisy: 0.42, desert_marigold: 0.44, arctic_poppy: 0.36, savanna_lily: 0.5, orange: 0.4, coin: 0.32,
+  daisy: 0.42, bluebell: 0.46, red_clover: 0.42, black_eyed_susan: 0.48, lavender_spike: 0.54,
+  desert_marigold: 0.44, prickly_pear_blossom: 0.5, desert_lupine: 0.54, evening_primrose: 0.42, firecracker_penstemon: 0.58,
+  arctic_poppy: 0.36, edelweiss: 0.38, alpine_forget_me_not: 0.34, glacier_lily: 0.42, purple_saxifrage: 0.36,
+  savanna_lily: 0.5, flame_lily: 0.56, bird_of_paradise_flower: 0.68, aloe_bloom: 0.6, acacia_blossom: 0.44,
+  orange: 0.4, coin: 0.32,
   ranger_grassland: 1.25, ranger_desert: 1.3, ranger_snow: 1.35, ranger_safari: 1.35, camera: 0.46,
 };
 

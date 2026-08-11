@@ -43,6 +43,7 @@ export class ModelLibrary {
     const pending = this.loader.loadAsync(`${baseUrl}${modelId}.glb`)
       .then((gltf) => {
         const model = gltf.scene;
+        model.userData.generatedPlaceholder = gltf.parser.json.asset?.generator === 'Globular Roam placeholder generator';
         model.traverse((node) => {
           if (!node.isMesh) return;
           node.castShadow = true;
@@ -74,6 +75,7 @@ export class ModelLibrary {
   attach(modelId, root, span) {
     return this.load(modelId).then((template) => {
       if (!template) return false;
+      if (template.userData.generatedPlaceholder) return false;
       const model = template.clone(true);
       model.updateMatrixWorld(true);
       const before = new THREE.Box3().setFromObject(model);

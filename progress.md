@@ -63,3 +63,11 @@ Original prompt: Implement the approved “Globular Roam: First Orbit” mobile-
 - Kept the runtime camera model attached when a fresh expedition rebuilds the player rig, preserving active use of the camera asset slot.
 - Split collectible visuals from their photo focus markers and preserved structure focus markers during GLB replacement, so first-person photo targeting still works after model swaps for plants, trees, finds, and landmarks.
 - Reduced ranger GLB spans for first-person readability, moved the legacy mannequin out of the opening biome, and guarded atmosphere updates against invalid transient test coordinates.
+
+## 2026-08-11 — expanded flower pass
+
+- Added 16 more named, identifiable flower photo subjects and gatherables: `bluebell`, `red_clover`, `black_eyed_susan`, `lavender_spike`, `prickly_pear_blossom`, `desert_lupine`, `evening_primrose`, `firecracker_penstemon`, `edelweiss`, `alpine_forget_me_not`, `glacier_lily`, `purple_saxifrage`, `flame_lily`, `bird_of_paradise_flower`, `aloe_bloom`, and `acacia_blossom`.
+- Placed the new flowers across grassland, desert, snow, and safari without changing First Orbit stamp requirements.
+- Added per-flower model spans, generated canonical missing `models/<flower-id>.glb` placeholders, and added `flower-expansion-sheet.svg` as the modeling reference map.
+- Extended content tests and the browser smoke route to prove one new flower photo from each biome saves into the field guide.
+- Updated the model loader so generated triangle placeholders reserve canonical GLB slots without replacing the clearer procedural fallback visuals.

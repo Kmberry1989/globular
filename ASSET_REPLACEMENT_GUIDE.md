@@ -43,7 +43,7 @@ The field guide now accepts photos of wildlife, insects, plants, trees, finds, a
 The active `.glb` files are cataloged in `MODEL_ASSETS`, `WORLD_PROP_ASSETS`, and `CHARACTER_MODEL_ASSETS` in `src/content.js`:
 
 - **Wildlife:** all original First Orbit animals plus expanded birds, insects, mammals, and variants including `willow_wren`, `cardinal`, `blue_jay`, `ruby_throated_hummingbird`, `red_tailed_hawk`, `bald_eagle`, `firefly`, `bumblebee`, `dragonfly`, `grasshopper`, `stag_beetle`, `snowy_owl_variant`, and `lion_variant`
-- **Collectibles/plants/finds:** all original gatherables plus `daisy`, `desert_marigold`, `arctic_poppy`, `savanna_lily`, `orange`, and `coin`
+- **Collectibles/plants/finds:** all original gatherables plus 20 biome flower variants including `daisy`, `bluebell`, `red_clover`, `black_eyed_susan`, `lavender_spike`, `desert_marigold`, `prickly_pear_blossom`, `desert_lupine`, `evening_primrose`, `firecracker_penstemon`, `arctic_poppy`, `edelweiss`, `alpine_forget_me_not`, `glacier_lily`, `purple_saxifrage`, `savanna_lily`, `flame_lily`, `bird_of_paradise_flower`, `aloe_bloom`, `acacia_blossom`, plus `orange` and `coin`
 - **Structures/environment:** all original structures plus `bush`, `oak_tree`, `palm_tree`, `pine_tree`, `baobab_tree`, `legacy_player_model`, `ranger_watchtower_variant`, and `safari_tent_variant`
 - **Characters/equipment:** `ranger_grassland`, `ranger_desert`, `ranger_snow`, `ranger_safari`, and `camera`
 

@@ -166,20 +166,30 @@ for (const [biomeId, speciesId, itemId] of expandedPairs) {
 await page.evaluate((id) => window.__globularTest.teleportToBiome(id), 'grassland');
 await advance(160);
 await captureSubject('daisy');
+await captureSubject('bluebell');
 await captureSubject('oak_tree');
+await page.evaluate((id) => window.__globularTest.teleportToBiome(id), 'desert');
+await advance(160);
+await captureSubject('prickly_pear_blossom');
+await page.evaluate((id) => window.__globularTest.teleportToBiome(id), 'snow');
+await advance(160);
+await captureSubject('edelweiss');
+await page.evaluate((id) => window.__globularTest.teleportToBiome(id), 'safari');
+await advance(160);
+await captureSubject('flame_lily');
 const expandedWorld = await page.evaluate(() => window.__globularTest.worldCounts());
 assert.ok(expandedWorld.wildlife >= 42, 'expanded wildlife should include birds, insects, and variants');
-assert.ok(expandedWorld.collectibles >= 35, 'expanded collectibles should include plant variants');
+assert.ok(expandedWorld.collectibles >= 51, 'expanded collectibles should include flower and plant variants');
 assert.ok(expandedWorld.structures >= 24, 'expanded structures should include tree/model variants');
 assert.equal(expandedWorld.photoSubjects, expandedWorld.wildlife + expandedWorld.collectibles + expandedWorld.structures);
-assert.equal((await state()).expedition.discoveries.length, 13);
+assert.equal((await state()).expedition.discoveries.length, 17);
 await page.screenshot({ path: path.join(outputDir, '04-expanded-entities.png'), fullPage: true });
 
 await clickForce('#field-guide-button');
 await page.waitForSelector('#guide-layer:not(.hidden)');
 await page.waitForTimeout(350);
-assert.equal(await page.locator('.guide-entry.found').count(), 13);
-assert.equal(await page.locator('.guide-entry.found .guide-image img').count(), 13);
+assert.equal(await page.locator('.guide-entry.found').count(), 17);
+assert.equal(await page.locator('.guide-entry.found .guide-image img').count(), 17);
 await page.screenshot({ path: path.join(outputDir, '04-field-guide.png'), fullPage: true });
 await clickForce('#guide-close');
 
@@ -204,10 +214,10 @@ await clickForce('#continue-button');
 await advance(250);
 const restored = await state();
 assert.equal(restored.expedition.complete, true);
-assert.equal(restored.expedition.discoveries.length, 13);
+assert.equal(restored.expedition.discoveries.length, 17);
 await clickForce('#field-guide-button');
 await page.waitForTimeout(300);
-assert.equal(await page.locator('.guide-entry.found .guide-image img').count(), 13);
+assert.equal(await page.locator('.guide-entry.found .guide-image img').count(), 17);
 await page.screenshot({ path: path.join(outputDir, '06-restored-guide.png'), fullPage: true });
 
 const mobileContext = await browser.newContext({

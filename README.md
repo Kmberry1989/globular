@@ -43,7 +43,7 @@ The model folder is now an active runtime registry. Every root `models/*.glb` fi
 - `models/bird.glb` is now the specific `willow_wren` model.
 - New bird placeholders include eagle, cardinal, hawk, blue jay, hummingbird, and owl variants.
 - New insect placeholders include firefly, bumblebee, dragonfly, grasshopper, and stag beetle.
-- New plant/tree placeholders include identifiable flowers, bush, oak, palm, pine, and baobab variants.
+- New plant/tree placeholders include 20 identifiable flower variants across the four biomes, plus bush, oak, palm, pine, and baobab variants.
 - The live player remains modular. `models/player.glb` is used as a legacy roamer mannequin/reference model while future player work moves toward swappable head, hat, top, lower-body, shoe, and accessory parts.
 
 Reference sheets for the new asset pass are in `concept-art/asset-roadmap-sheets/`; the broader GLB replacement handoff is in `ASSET_PROP_SHEET.md`.

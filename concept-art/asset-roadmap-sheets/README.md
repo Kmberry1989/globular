@@ -44,6 +44,31 @@ Left-to-right, top-to-bottom:
 | 13 | `pine_tree` | `models/pine_tree.glb` |
 | 14 | `baobab_tree` | `models/baobab_tree.glb` |
 
+## Flower Expansion Sheet
+
+File: `flower-expansion-sheet.svg`
+
+Left-to-right, top-to-bottom:
+
+| Slot | Runtime ID | Target model |
+| --- | --- | --- |
+| 1 | `bluebell` | `models/bluebell.glb` |
+| 2 | `red_clover` | `models/red_clover.glb` |
+| 3 | `black_eyed_susan` | `models/black_eyed_susan.glb` |
+| 4 | `lavender_spike` | `models/lavender_spike.glb` |
+| 5 | `prickly_pear_blossom` | `models/prickly_pear_blossom.glb` |
+| 6 | `desert_lupine` | `models/desert_lupine.glb` |
+| 7 | `evening_primrose` | `models/evening_primrose.glb` |
+| 8 | `firecracker_penstemon` | `models/firecracker_penstemon.glb` |
+| 9 | `edelweiss` | `models/edelweiss.glb` |
+| 10 | `alpine_forget_me_not` | `models/alpine_forget_me_not.glb` |
+| 11 | `glacier_lily` | `models/glacier_lily.glb` |
+| 12 | `purple_saxifrage` | `models/purple_saxifrage.glb` |
+| 13 | `flame_lily` | `models/flame_lily.glb` |
+| 14 | `bird_of_paradise_flower` | `models/bird_of_paradise_flower.glb` |
+| 15 | `aloe_bloom` | `models/aloe_bloom.glb` |
+| 16 | `acacia_blossom` | `models/acacia_blossom.glb` |
+
 ## Modular Character Sheet
 
 File: `modular-character-sheet.png`

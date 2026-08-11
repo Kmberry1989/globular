@@ -102,6 +102,25 @@ test('bird, insect, plant, and tree expansion subjects are photographable', () =
   }
 });
 
+test('expanded flower set includes multiple identifiable blooms per biome', () => {
+  const expectedFlowers = {
+    grassland: ['daisy', 'bluebell', 'red_clover', 'black_eyed_susan', 'lavender_spike'],
+    desert: ['desert_marigold', 'prickly_pear_blossom', 'desert_lupine', 'evening_primrose', 'firecracker_penstemon'],
+    snow: ['arctic_poppy', 'edelweiss', 'alpine_forget_me_not', 'glacier_lily', 'purple_saxifrage'],
+    safari: ['savanna_lily', 'flame_lily', 'bird_of_paradise_flower', 'aloe_bloom', 'acacia_blossom'],
+  };
+  for (const [biomeId, flowerIds] of Object.entries(expectedFlowers)) {
+    const placed = new Set(WORLD_LAYOUT[biomeId].collectibles.map(([id]) => id));
+    for (const id of flowerIds) {
+      assert.equal(COLLECTIBLES[id]?.form, 'flower', `${id} should be authored as a flower`);
+      assert.equal(COLLECTIBLES[id]?.biome, biomeId, `${id} should belong to ${biomeId}`);
+      assert.equal(PHOTO_SUBJECTS[id]?.category, 'Plants', `${id} should save as a plant photo`);
+      assert.ok(placed.has(id), `${id} should be placed in ${biomeId}`);
+      assert.equal(MODEL_ASSETS[id]?.path, `models/${id}.glb`, `${id} should have its own model slot`);
+    }
+  }
+});
+
 test('expanded content does not alter First Orbit requirements', () => {
   assert.deepEqual(BIOMES.grassland.requirements.map((entry) => entry.target), ['butterfly', 'starflower']);
   assert.deepEqual(BIOMES.desert.requirements.map((entry) => entry.target), ['camel', 'sunpetal']);
