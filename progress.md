@@ -39,3 +39,18 @@ Original prompt: Implement the approved “Globular Roam: First Orbit” mobile-
 - Replaced placeholder entity presentation with live Draco GLB loading and canonical model publishing.
 - Added semantic model spans to preserve realistic size relationships across animals, resources, and structures; strengthened sky/fill lighting and added biome forecasts with rain, snow, pollen, dust, and haze particles.
 - Verified the live Frost flurry with the deterministic weather hook: 64 GLBs loaded, zero failures, expected weather state, readable model lighting, and correctly scaled watchtower, bridge, animals, and resources. `npm run test:unit`, `npm run build`, and `git diff --check` pass. The legacy full smoke runner reached the fourth biome again but did not emit its completion marker in this host session; the deterministic live weather check is the completed browser proof for this pass.
+
+## 2026-08-10 — biome prop model pass
+
+- Routed the globe's repeated tree, cactus, and ice-cluster dressing through cached GLB slots, replacing those primitive presentations when `tree.glb`, `cactus.glb`, or `ice_patch.glb` loads successfully.
+- Routed the four biome arrival landmarks through model slots: `picnic_shelter.glb`, `sandstone_ruins.glb`, `ice_patch.glb`, and `tree.glb`. Procedural landmark geometry remains the decode/missing-asset fallback.
+- Added `WORLD_PROP_ASSETS` coverage and `ASSET_PROP_SHEET.md` with export rules, P0 replacement slots, the existing 48-asset catalog, and the next player/ranger/camera requirements.
+- `npm run test:unit` passes all 13 tests; `npm run build` and `git diff --check` pass. The browser route reached the snow scene and the inspected screenshot shows loaded snow props and landmark geometry. A fresh smoke run did not emit its final completion marker in this host session, matching the known runner limitation; no browser error was reported before the route stopped.
+
+## 2026-08-11 — active bird, insect, plant, and modular character asset pass
+
+- Expanded the active world with named bird species including `willow_wren`, `cardinal`, `blue_jay`, `ruby_throated_hummingbird`, `red_tailed_hawk`, and `bald_eagle`; `models/bird.glb` is now assigned to the specific `willow_wren` subject.
+- Added the first insect batch (`firefly`, `bumblebee`, `dragonfly`, `grasshopper`, `stag_beetle`) plus plant/tree variants (`daisy`, `desert_marigold`, `arctic_poppy`, `savanna_lily`, `bush`, `oak_tree`, `palm_tree`, `pine_tree`, `baobab_tree`) and placed them in the globe layout.
+- Converted the photo system from wildlife-only to shared photo subjects, so plants, trees, finds, structures, and landmarks can save photos into the field guide alongside animals while First Orbit requirements remain unchanged.
+- Wired `ranger_grassland`, `ranger_desert`, `ranger_snow`, `ranger_safari`, and `camera` as runtime model slots. The live player remains modular; `models/player.glb` is used as a legacy roamer mannequin/reference model.
+- Added concept sheets in `concept-art/asset-roadmap-sheets/` for bird expansion, insect/plant/tree variants, and modular character parts. Future GLB replacements should use those sheets plus `ASSET_PROP_SHEET.md`.

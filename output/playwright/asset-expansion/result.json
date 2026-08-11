@@ -1,0 +1,25 @@
+{
+  "passed": true,
+  "stamps": [
+    "grassland",
+    "desert",
+    "snow",
+    "safari"
+  ],
+  "discoveries": [
+    "butterfly",
+    "camel",
+    "penguin",
+    "polar_bear",
+    "zebra",
+    "giraffe",
+    "elephant",
+    "hedgehog",
+    "meerkat",
+    "seal",
+    "lion",
+    "daisy",
+    "oak_tree"
+  ],
+  "complete": true
+}

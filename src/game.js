@@ -4,6 +4,7 @@ import {
   BIOMES,
   COLLECTIBLES,
   COSMETICS,
+  PHOTO_SUBJECTS,
   SPECIES,
   STRUCTURES,
   WORLD_LAYOUT,
@@ -32,13 +33,20 @@ const INTERACTION_DISTANCE = 2.7;
 
 const MODEL_SPANS = {
   butterfly: 0.55, ladybug: 0.26, red_panda: 0.9, hedgehog: 0.55, songbird: 0.65, frog: 0.45, squirrel: 0.7,
+  willow_wren: 0.48, cardinal: 0.54, blue_jay: 0.58, ruby_throated_hummingbird: 0.32, firefly: 0.22, bumblebee: 0.24, koala: 0.85,
   camel: 1.65, fennec: 0.62, meerkat: 0.55, desert_tortoise: 0.78, roadrunner: 0.9, gecko: 0.42,
+  red_tailed_hawk: 1.05, dragonfly: 0.36,
   fish: 0.7, penguin: 1.05, polar_bear: 1.8, arctic_fox: 0.75, seal: 1.35, snowy_owl: 0.85, arctic_hare: 0.65, musk_ox: 1.55,
+  bald_eagle: 1.12, snowy_owl_variant: 0.86, stag_beetle: 0.28,
   zebra: 1.6, giraffe: 2.9, elephant: 2.2, flamingo: 1.75, crab: 0.55, lion: 1.45, hippo: 1.7, warthog: 0.9, hornbill: 0.8,
+  lion_variant: 1.45, ostrich: 1.8, monkey: 0.82, feline: 0.68, grasshopper: 0.3,
   windmill: 2.5, stone_bridge: 2.6, birdhouse: 1.55, picnic_shelter: 2.4,
   oasis_well: 1.35, sandstone_ruins: 2.1, desert_tent: 1.8, wind_tower: 3.1,
-  igloo: 1.65, ice_bridge: 2.8, ranger_watchtower: 3.3, sled_station: 2.5,
-  lookout_tower: 3.1, water_trough: 1.65, rope_bridge: 2.9, safari_tent: 2.0,
+  igloo: 1.65, ice_bridge: 2.8, ranger_watchtower: 3.3, ranger_watchtower_variant: 3.1, sled_station: 2.5,
+  lookout_tower: 3.1, water_trough: 1.65, rope_bridge: 2.9, safari_tent: 2.0, safari_tent_variant: 1.8,
+  bush: 1.0, oak_tree: 2.5, palm_tree: 2.6, pine_tree: 2.4, baobab_tree: 3.2, legacy_player_model: 1.9,
+  daisy: 0.42, desert_marigold: 0.44, arctic_poppy: 0.36, savanna_lily: 0.5, orange: 0.4, coin: 0.32,
+  ranger_grassland: 1.75, ranger_desert: 1.8, ranger_snow: 1.85, ranger_safari: 1.9, camera: 0.46,
 };
 
 const WEATHER = {
@@ -124,17 +132,20 @@ function makePlayer(save) {
   torso.name = 'jacket';
   const head = mesh(new THREE.SphereGeometry(0.37, 12, 10), hexToNumber(save.appearance.skin), { y: 1.9 });
   const hair = mesh(new THREE.SphereGeometry(0.39, 12, 8, 0, Math.PI * 2, 0, Math.PI / 2), 0x5b3828, { y: 2.02 });
+  const cameraRig = new THREE.Group();
+  cameraRig.name = 'held-camera-slot';
   const camera = mesh(new THREE.BoxGeometry(0.42, 0.3, 0.22), 0x26352f, { y: 1.04 });
   camera.position.z = 0.4;
   const lens = mesh(new THREE.CylinderGeometry(0.11, 0.11, 0.14, 10), 0x6fa9a4, { y: 1.04 });
   lens.rotation.x = Math.PI / 2;
   lens.position.z = 0.55;
+  cameraRig.add(camera, lens);
   const strapMaterial = new THREE.MeshBasicMaterial({ color: 0xd2a54d });
   const strap = new THREE.Mesh(new THREE.TorusGeometry(0.37, 0.025, 6, 20, Math.PI), strapMaterial);
   strap.rotation.z = Math.PI;
   strap.position.set(0, 1.32, 0.25);
   strap.name = 'camera-strap';
-  root.add(legs, torso, head, hair, camera, lens, strap);
+  root.add(legs, torso, head, hair, cameraRig, strap);
   updatePlayerCosmetic(root, save.equippedCosmetic);
   return root;
 }
@@ -369,12 +380,12 @@ function makeWildlife(species) {
   root.add(focus);
   root.userData.kind = 'wildlife';
   root.userData.speciesId = species.id;
-  return { root, animal, visual, focus, species, phase: Math.random() * Math.PI * 2 };
+  return { root, animal, visual, focus, species, photoSubject: PHOTO_SUBJECTS[species.id], phase: Math.random() * Math.PI * 2 };
 }
 
 function makeCollectible(item) {
   const root = new THREE.Group();
-  if (item.id.includes('flower') || item.id === 'sunpetal' || item.id === 'snowdrop') {
+  if (item.form === 'flower' || item.id.includes('flower') || item.id === 'sunpetal' || item.id === 'snowdrop') {
     const stem = mesh(new THREE.CylinderGeometry(0.025, 0.035, 0.42, 6), 0x4e913f, { y: 0.21 });
     root.add(stem);
     const petals = item.id === 'sunpetal' ? 9 : 6;
@@ -405,7 +416,7 @@ function makeCollectible(item) {
     for (const [x, z] of [[0, 0], [-0.12, 0.06], [0.12, 0.06], [0, -0.11]]) root.add(mesh(new THREE.SphereGeometry(0.11, 7, 6), item.color, { y: 0.24 }).translateX(x).translateZ(z));
   } else if (item.form === 'sprig' || item.form === 'reed') {
     for (const x of [-0.09, 0, 0.09]) { const blade = mesh(new THREE.CapsuleGeometry(0.025, item.form === 'reed' ? 0.54 : 0.38, 4, 5), item.color, { y: item.form === 'reed' ? 0.3 : 0.22 }); blade.position.x = x; blade.rotation.z = x * 2; root.add(blade); }
-  } else if (item.form === 'fruit' || item.form === 'pearl') {
+  } else if (item.form === 'fruit' || item.form === 'pearl' || item.form === 'coin') {
     root.add(mesh(new THREE.SphereGeometry(item.form === 'pearl' ? 0.2 : 0.24, 8, 7), item.color, { y: 0.24 }));
   } else if (item.form === 'crystal') {
     const crystal = mesh(new THREE.OctahedronGeometry(0.28, 0), item.color, { y: 0.28 }); crystal.scale.y = 1.5; root.add(crystal);
@@ -418,7 +429,10 @@ function makeCollectible(item) {
   }
   root.userData.kind = 'collectible';
   root.userData.itemId = item.id;
-  return { root, item, collected: false, phase: Math.random() * Math.PI * 2 };
+  const focus = new THREE.Object3D();
+  focus.position.y = item.form === 'reed' || item.form === 'sprig' ? 0.58 : 0.34;
+  root.add(focus);
+  return { root, focus, item, photoSubject: PHOTO_SUBJECTS[item.id], collected: false, phase: Math.random() * Math.PI * 2 };
 }
 
 function makeStructure(structure) {
@@ -451,9 +465,24 @@ function makeStructure(structure) {
   } else if (form === 'tent' || form === 'shelter') {
     root.add(mesh(new THREE.BoxGeometry(1.15, 0.08, 0.82), accent, { y: 0.04 }));
     const canopy = mesh(new THREE.ConeGeometry(0.82, 0.85, form === 'tent' ? 4 : 3), color, { y: 0.48 }); canopy.rotation.y = Math.PI / 4; root.add(canopy);
+  } else if (form === 'tree') {
+    const tree = makeTree(color);
+    tree.scale.setScalar(structure.id === 'baobab_tree' ? 1.55 : structure.id === 'palm_tree' ? 1.35 : 1.15);
+    root.add(tree);
+  } else if (form === 'bush') {
+    const shrub = mesh(new THREE.IcosahedronGeometry(0.58, 1), color, { y: 0.48 });
+    shrub.scale.set(1.35, 0.72, 1);
+    root.add(shrub);
+    for (const [x, z] of [[-0.28, 0.1], [0.05, 0.25], [0.32, -0.04]]) root.add(mesh(new THREE.SphereGeometry(0.08, 6, 5), accent, { y: 0.72 }).translateX(x).translateZ(z));
+  } else if (form === 'statue') {
+    root.add(mesh(new THREE.CapsuleGeometry(0.35, 0.9, 4, 8), color, { y: 0.85 }));
+    root.add(mesh(new THREE.SphereGeometry(0.3, 10, 8), accent, { y: 1.55 }));
   }
   root.userData.kind = 'structure'; root.userData.structureId = structure.id;
-  return root;
+  const focus = new THREE.Object3D();
+  focus.position.y = form === 'tree' ? 1.55 : form === 'tower' ? 1.8 : form === 'statue' ? 1.25 : 0.75;
+  root.add(focus);
+  return { root, focus, structure, photoSubject: PHOTO_SUBJECTS[structure.id] };
 }
 
 function makeTree(color = 0x4d8c56) {
@@ -518,6 +547,7 @@ export class GlobularRoamGame {
     this.wildlife = [];
     this.collectibles = [];
     this.structures = [];
+    this.photoSubjects = [];
     this.rangers = [];
     this.lastFrame = performance.now();
     this.manualStepping = false;
@@ -568,11 +598,12 @@ export class GlobularRoamGame {
     this.createGlobe();
     this.player = makePlayer(this.save);
     this.scene.add(this.player);
+    this.models.attach('camera', this.player.getObjectByName('held-camera-slot'), this.modelSpan({ id: 'camera' }, 0.46));
     this.photography = new PhotographySystem({
       renderer: this.renderer,
       scene: this.scene,
       camera: this.camera,
-      wildlife: this.wildlife,
+      subjects: this.photoSubjects,
       onFocusChanged: (focus) => this.ui.setCameraFocus(focus),
     });
     this.resize = this.resize.bind(this);
@@ -661,10 +692,18 @@ export class GlobularRoamGame {
       const landmark = makeLandmark(biomeId);
       positionOnGlobe(landmark, biome.center - 0.2, 0.11);
       this.globe.add(landmark);
+      const landmarkModelId = {
+        grassland: 'picnic_shelter',
+        desert: 'sandstone_ruins',
+        snow: 'ice_patch',
+        safari: 'tree',
+      }[biomeId];
+      this.models.attach(landmarkModelId, landmark, biomeId === 'safari' ? 3.4 : 2.8);
       const ranger = makeRanger(biome);
       positionOnGlobe(ranger, biome.center + 0.025, 0.045);
       this.globe.add(ranger);
       this.rangers.push({ root: ranger, biomeId });
+      this.models.attach(`ranger_${biomeId}`, ranger, this.modelSpan({ id: `ranger_${biomeId}` }, 1.8));
 
       for (let index = 0; index < 14; index += 1) {
         const longitude = biome.center - 0.3 + (index / 13) * 0.6;
@@ -678,14 +717,23 @@ export class GlobularRoamGame {
         decoration.scale.setScalar(scale);
         positionOnGlobe(decoration, longitude, latitude);
         this.globe.add(decoration);
+        const decorationModelId = biomeId === 'desert'
+          ? (index % 3 ? 'cactus' : 'tree')
+          : biomeId === 'snow'
+            ? (index % 2 ? 'ice_patch' : 'tree')
+            : 'tree';
+        this.models.attach(decorationModelId, decoration, biomeId === 'snow' && index % 2 ? 0.95 : 1.25);
       }
 
       for (const [structureId, lonOffset, latitude] of WORLD_LAYOUT[biomeId].structures) {
         const structure = makeStructure(STRUCTURES[structureId]);
-        positionOnGlobe(structure, biome.center + lonOffset, latitude);
-        this.globe.add(structure);
-        this.structures.push({ root: structure, structure: STRUCTURES[structureId] });
-        this.models.attach(modelIdForStructure(STRUCTURES[structureId]), structure, this.modelSpan(STRUCTURES[structureId], 2.1));
+        structure.longitude = biome.center + lonOffset;
+        structure.latitude = latitude;
+        positionOnGlobe(structure.root, structure.longitude, structure.latitude);
+        this.globe.add(structure.root);
+        this.structures.push(structure);
+        this.photoSubjects.push(structure);
+        this.models.attach(modelIdForStructure(STRUCTURES[structureId]), structure.root, this.modelSpan(STRUCTURES[structureId], 2.1));
       }
 
       for (const [speciesId, lonOffset, latitude] of WORLD_LAYOUT[biomeId].wildlife) {
@@ -695,6 +743,7 @@ export class GlobularRoamGame {
         positionOnGlobe(subject.root, subject.longitude, subject.latitude, speciesId === 'fish' ? 0.14 : 0.05);
         this.globe.add(subject.root);
         this.wildlife.push(subject);
+        this.photoSubjects.push(subject);
         this.models.attach(modelIdForSpecies(subject.species), subject.visual, this.modelSpan(subject.species, 1.05));
       }
       WORLD_LAYOUT[biomeId].collectibles.forEach(([itemId, lonOffset, latitude], index) => {
@@ -705,6 +754,7 @@ export class GlobularRoamGame {
         positionOnGlobe(collectible.root, collectible.longitude, collectible.latitude, 0.05);
         this.globe.add(collectible.root);
         this.collectibles.push(collectible);
+        this.photoSubjects.push(collectible);
         this.models.attach(modelIdForCollectible(collectible.item), collectible.root, this.modelSpan(collectible.item, 0.56));
       });
     }
@@ -824,6 +874,7 @@ export class GlobularRoamGame {
     this.camera.fov = 58;
     this.camera.updateProjectionMatrix();
     this.player.visible = true;
+    this.photography.forceSubject(null);
     this.ui.setCameraMode(false);
   }
 
@@ -834,25 +885,27 @@ export class GlobularRoamGame {
     this.playSound('shutter');
     const focus = this.photography.update(PLAYER_POSITION);
     if (!focus?.valid) {
-      this.ui.toastMessage(focus ? 'Almost — place the subject inside the circle.' : 'No wildlife in frame. Try moving closer.');
+      this.ui.toastMessage(focus ? 'Almost — place the subject inside the circle.' : 'No subject in frame. Try moving closer.');
       setTimeout(() => { this.capturing = false; }, 320);
       return;
     }
     const capture = await this.photography.capture();
-    const species = focus.subject.species;
-    const isNew = !this.save.discoveries[species.id];
+    const subject = focus.subject.photoSubject || focus.subject.species;
+    const isNew = !this.save.discoveries[subject.id];
     if (isNew) {
-      this.save.discoveries[species.id] = {
-        speciesId: species.id,
-        biomeId: species.biome,
+      this.save.discoveries[subject.id] = {
+        subjectId: subject.id,
+        speciesId: focus.subject.species?.id,
+        biomeId: subject.biome,
+        category: subject.category,
         discoveredAt: new Date().toISOString(),
       };
       this.save.bells += 25;
-      if (capture.blob) await storePhoto(species.id, capture.blob);
+      if (capture.blob) await storePhoto(subject.id, capture.blob);
       this.persist();
       this.checkChapterCompletion();
     }
-    this.ui.showPhotoResult({ previewUrl: capture.previewUrl, species, isNew });
+    this.ui.showPhotoResult({ previewUrl: capture.previewUrl, subject, isNew });
     this.capturing = false;
   }
 
@@ -1225,10 +1278,12 @@ export class GlobularRoamGame {
   renderGameToText() {
     const visible = [];
     const world = new THREE.Vector3();
-    for (const subject of this.wildlife) {
+    for (const subject of this.photoSubjects) {
+      if (subject.collected || subject.root.visible === false) continue;
       subject.focus.getWorldPosition(world);
       const distance = world.distanceTo(PLAYER_POSITION);
-      if (distance <= 12) visible.push({ id: subject.species.id, name: subject.species.name, distance: Number(distance.toFixed(2)) });
+      const photoSubject = subject.photoSubject || subject.species;
+      if (distance <= 12) visible.push({ id: photoSubject.id, name: photoSubject.name, category: photoSubject.category, distance: Number(distance.toFixed(2)) });
     }
     return JSON.stringify({
       coordinateSystem: 'Player remains at the top of the globe. Longitude increases eastward around the orbit; latitude is clamped north/south.',
@@ -1247,7 +1302,7 @@ export class GlobularRoamGame {
       },
       camera: this.mode === 'camera' ? {
         aim: this.photography.aim,
-        focus: this.photography.focus?.subject.species.id || null,
+        focus: this.photography.focus?.subject.photoSubject?.id || this.photography.focus?.subject.species?.id || null,
         ready: Boolean(this.photography.focus?.valid),
       } : null,
       context: this.context ? { kind: this.context.kind, label: this.context.label } : null,
@@ -1261,6 +1316,7 @@ export class GlobularRoamGame {
         wildlife: this.wildlife.length,
         collectibles: this.collectibles.filter((entry) => !entry.collected).length,
         structures: this.structures.length,
+        photoSubjects: this.photoSubjects.length,
         models: this.models.status(),
       },
       settings: { ...this.save.settings },
@@ -1305,6 +1361,21 @@ export class GlobularRoamGame {
         this.updateGlobeOrientation();
         this.updateBiome();
         this.photography.resetAim();
+        this.photography.forceSubject(speciesId);
+        this.updateCamera();
+        this.photography.update(PLAYER_POSITION);
+        this.render();
+        return true;
+      },
+      frameSubject: (subjectId) => {
+        const subject = this.photoSubjects.find((entry) => entry.photoSubject?.id === subjectId && !entry.collected);
+        if (!subject) return false;
+        this.save.longitude = normalizeLongitude(subject.longitude);
+        this.save.latitude = subject.latitude - 0.025;
+        this.updateGlobeOrientation();
+        this.updateBiome();
+        this.photography.resetAim();
+        this.photography.forceSubject(subjectId);
         this.updateCamera();
         this.photography.update(PLAYER_POSITION);
         this.render();
@@ -1325,11 +1396,12 @@ export class GlobularRoamGame {
         wildlife: this.wildlife.length,
         collectibles: this.collectibles.length,
         structures: this.structures.length,
+        photoSubjects: this.photoSubjects.length,
       }),
-      discover: (speciesId) => {
-        const species = SPECIES[speciesId];
-        if (!species) return;
-        this.save.discoveries[speciesId] = { speciesId, biomeId: species.biome, discoveredAt: new Date().toISOString() };
+      discover: (subjectId) => {
+        const subject = PHOTO_SUBJECTS[subjectId];
+        if (!subject) return;
+        this.save.discoveries[subjectId] = { subjectId, speciesId: SPECIES[subjectId]?.id, biomeId: subject.biome, category: subject.category, discoveredAt: new Date().toISOString() };
         this.checkChapterCompletion();
         this.persist();
       },

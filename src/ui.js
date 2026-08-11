@@ -1,4 +1,4 @@
-import { BIOME_ORDER, BIOMES, COLLECTIBLES, COSMETICS, SPECIES, currentChapter } from './content.js';
+import { BIOME_ORDER, BIOMES, COLLECTIBLES, COSMETICS, PHOTO_SUBJECTS, currentChapter } from './content.js';
 import { calculateInventoryValue, requirementProgress } from './progression.js';
 
 const iconForRequirement = (requirement) => (requirement.kind === 'photo' ? '📷' : '🤲');
@@ -32,7 +32,7 @@ export class GameUI {
               <span class="planet-dot dot-two"></span>
               <span class="camera-glyph">📷</span>
             </div>
-            <p class="start-copy">Photograph wildlife, help four local rangers, and fill the first pages of your field guide.</p>
+            <p class="start-copy">Photograph wildlife, plants, trees, and landmarks while helping four local rangers fill the field guide.</p>
             <label class="name-field">
               <span>Explorer name</span>
               <input id="player-name" maxlength="18" autocomplete="off" value="Roamer" />
@@ -96,7 +96,7 @@ export class GameUI {
         <section id="camera-overlay" class="camera-overlay hidden">
           <div class="viewfinder-corners" aria-hidden="true"></div>
           <div id="reticle" class="reticle"><span></span></div>
-          <div id="camera-focus-label" class="camera-focus-label">Look for nearby wildlife</div>
+          <div id="camera-focus-label" class="camera-focus-label">Look for nearby subjects</div>
           <button id="camera-close" class="camera-close" aria-label="Close camera">×</button>
           <div class="camera-instructions">Drag to frame · center a subject in the circle</div>
           <button id="shutter-button" class="shutter-button" aria-label="Take photograph"><span></span></button>
@@ -105,7 +105,7 @@ export class GameUI {
 
         <section id="photo-result" class="photo-result hidden">
           <div class="photo-polaroid">
-            <img id="photo-preview" alt="Your wildlife photograph" />
+            <img id="photo-preview" alt="Your field-guide photograph" />
             <div>
               <span id="photo-result-kicker">NEW DISCOVERY</span>
               <strong id="photo-result-name"></strong>
@@ -366,11 +366,13 @@ export class GameUI {
     const valid = Boolean(focus?.valid);
     this.reticle.classList.toggle('locked', valid);
     if (!focus) {
-      this['camera-focus-label'].textContent = 'Look for nearby wildlife';
+      this['camera-focus-label'].textContent = 'Look for nearby subjects';
     } else if (valid) {
-      this['camera-focus-label'].textContent = `${focus.subject.species.emoji} ${focus.subject.species.name} · Ready`;
+      const subject = focus.subject.photoSubject || focus.subject.species;
+      this['camera-focus-label'].textContent = `${subject.emoji} ${subject.name} · Ready`;
     } else {
-      this['camera-focus-label'].textContent = `${focus.subject.species.name} · Center the subject`;
+      const subject = focus.subject.photoSubject || focus.subject.species;
+      this['camera-focus-label'].textContent = `${subject.name} · Center the subject`;
     }
   }
 
@@ -381,10 +383,11 @@ export class GameUI {
     this['camera-flash'].classList.add('flash');
   }
 
-  showPhotoResult({ previewUrl, species, isNew }) {
+  showPhotoResult({ previewUrl, subject, species, isNew }) {
+    const display = subject || species;
     this['photo-preview'].src = previewUrl;
     this['photo-result-kicker'].textContent = isNew ? 'NEW DISCOVERY' : 'ANOTHER LOVELY SHOT';
-    this['photo-result-name'].textContent = `${species.emoji} ${species.name}`;
+    this['photo-result-name'].textContent = `${display.emoji} ${display.name}`;
     this['photo-result'].classList.remove('hidden');
     setTimeout(() => this['photo-result'].classList.add('hidden'), 2100);
   }
@@ -412,28 +415,28 @@ export class GameUI {
   async showFieldGuide(save, loadPhoto) {
     this['guide-layer'].classList.remove('hidden');
     const discovered = Object.keys(save.discoveries).length;
-    const total = Object.keys(SPECIES).length;
-    this['guide-progress'].innerHTML = `<strong>${discovered} / ${total}</strong><span>species photographed</span><div><i style="width:${(discovered / total) * 100}%"></i></div>`;
-    this['guide-grid'].innerHTML = Object.values(SPECIES).map((species) => {
-      const found = Boolean(save.discoveries[species.id]);
+    const total = Object.keys(PHOTO_SUBJECTS).length;
+    this['guide-progress'].innerHTML = `<strong>${discovered} / ${total}</strong><span>subjects photographed</span><div><i style="width:${(discovered / total) * 100}%"></i></div>`;
+    this['guide-grid'].innerHTML = Object.values(PHOTO_SUBJECTS).map((subject) => {
+      const found = Boolean(save.discoveries[subject.id]);
       return `
-        <article class="guide-entry ${found ? 'found' : 'unknown'}" data-guide-id="${species.id}">
-          <div class="guide-image"><span>${found ? species.emoji : '?'}</span></div>
-          <div><small>${BIOMES[species.biome].emoji} ${BIOMES[species.biome].shortName}</small>
-          <strong>${found ? species.name : 'Undiscovered'}</strong>
-          <p>${found ? species.note : 'Find this subject somewhere on your orbit.'}</p></div>
+        <article class="guide-entry ${found ? 'found' : 'unknown'}" data-guide-id="${subject.id}">
+          <div class="guide-image"><span>${found ? subject.emoji : '?'}</span></div>
+          <div><small>${BIOMES[subject.biome].emoji} ${BIOMES[subject.biome].shortName} · ${subject.category}</small>
+          <strong>${found ? subject.name : 'Undiscovered'}</strong>
+          <p>${found ? subject.note : 'Find this subject somewhere on your orbit.'}</p></div>
         </article>
       `;
     }).join('');
-    await Promise.all(Object.keys(save.discoveries).map(async (speciesId) => {
-      const blob = await loadPhoto(speciesId);
+    await Promise.all(Object.keys(save.discoveries).map(async (subjectId) => {
+      const blob = await loadPhoto(subjectId);
       if (!blob || !this['guide-layer'].isConnected) return;
-      const entry = this['guide-grid'].querySelector(`[data-guide-id="${speciesId}"] .guide-image`);
+      const entry = this['guide-grid'].querySelector(`[data-guide-id="${subjectId}"] .guide-image`);
       if (!entry) return;
-      if (this.photoUrls.has(speciesId)) URL.revokeObjectURL(this.photoUrls.get(speciesId));
+      if (this.photoUrls.has(subjectId)) URL.revokeObjectURL(this.photoUrls.get(subjectId));
       const url = URL.createObjectURL(blob);
-      this.photoUrls.set(speciesId, url);
-      entry.innerHTML = `<img src="${url}" alt="${SPECIES[speciesId].name} photograph" />`;
+      this.photoUrls.set(subjectId, url);
+      entry.innerHTML = `<img src="${url}" alt="${PHOTO_SUBJECTS[subjectId]?.name || 'Field-guide subject'} photograph" />`;
     }));
   }
 

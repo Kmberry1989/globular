@@ -3,6 +3,7 @@ import {
   BIOMES,
   COLLECTIBLES,
   COSMETICS,
+  PHOTO_SUBJECTS,
   SPECIES,
   normalizeLongitude,
 } from './content.js';
@@ -50,11 +51,13 @@ function sanitizeCountMap(raw, catalog) {
 function sanitizeDiscoveries(raw) {
   if (!isRecord(raw)) return {};
   return Object.fromEntries(Object.entries(raw).flatMap(([id, discovery]) => {
-    const species = SPECIES[id];
-    if (!species || !isRecord(discovery)) return [];
+    const subject = PHOTO_SUBJECTS[id];
+    if (!subject || !isRecord(discovery)) return [];
     return [[id, {
-      speciesId: id,
-      biomeId: species.biome,
+      subjectId: id,
+      speciesId: SPECIES[id]?.id,
+      biomeId: subject.biome,
+      category: subject.category,
       discoveredAt: typeof discovery.discoveredAt === 'string'
         ? discovery.discoveredAt
         : new Date(0).toISOString(),

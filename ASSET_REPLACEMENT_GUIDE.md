@@ -34,17 +34,20 @@ npm run assets:placeholders
 
 Use `node scripts/generate-model-placeholders.mjs --force` only when you intentionally want to recreate catalog placeholders.
 
-Each generated `.glb` is a valid, named glTF 2.0 binary containing a minimal triangle proxy. It is deliberately not rendered at runtime: the game keeps its procedural low-poly entity visible until production art is supplied.
+Each generated `.glb` is a valid, named glTF 2.0 binary containing a minimal triangle proxy. Encounterable entities, biome-dressing slots, rangers, camera equipment, plant variants, tree variants, and model variants are loaded through the runtime model library; if a file is missing or fails to decode, the procedural low-poly form remains as a safe fallback. See [`ASSET_PROP_SHEET.md`](ASSET_PROP_SHEET.md) for the current replacement priorities.
+
+The field guide now accepts photos of wildlife, insects, plants, trees, finds, and landmarks. New bird, insect, plant, tree, and modular character reference sheets live in [`concept-art/asset-roadmap-sheets/`](concept-art/asset-roadmap-sheets/). The generic `models/bird.glb` is now the specific `willow_wren` runtime model, and `models/player.glb` is reserved as a legacy mannequin while the live player moves toward modular part slots.
 
 ### Expanded entity placeholders
 
-48 additional placeholder `.glb` files are now cataloged in `MODEL_ASSETS` in `src/content.js`:
+The active `.glb` files are cataloged in `MODEL_ASSETS`, `WORLD_PROP_ASSETS`, and `CHARACTER_MODEL_ASSETS` in `src/content.js`:
 
-- **Wildlife:** `hedgehog`, `songbird`, `frog`, `squirrel`, `meerkat`, `desert_tortoise`, `roadrunner`, `gecko`, `seal`, `snowy_owl`, `arctic_hare`, `musk_ox`, `lion`, `hippo`, `warthog`, `hornbill`
-- **Collectibles:** `clover_mushroom`, `acorn`, `dewberry`, `wild_mint`, `cactus_fruit`, `desert_pearl`, `amber_shard`, `date_cluster`, `frostberry`, `pinecone`, `aurora_shell`, `snow_crystal`, `baobab_pod`, `amber_bead`, `river_reed`, `painted_stone`
-- **Structures:** `windmill`, `stone_bridge`, `birdhouse`, `picnic_shelter`, `oasis_well`, `sandstone_ruins`, `desert_tent`, `wind_tower`, `igloo`, `ice_bridge`, `ranger_watchtower`, `sled_station`, `lookout_tower`, `water_trough`, `rope_bridge`, `safari_tent`
+- **Wildlife:** all original First Orbit animals plus expanded birds, insects, mammals, and variants including `willow_wren`, `cardinal`, `blue_jay`, `ruby_throated_hummingbird`, `red_tailed_hawk`, `bald_eagle`, `firefly`, `bumblebee`, `dragonfly`, `grasshopper`, `stag_beetle`, `snowy_owl_variant`, and `lion_variant`
+- **Collectibles/plants/finds:** all original gatherables plus `daisy`, `desert_marigold`, `arctic_poppy`, `savanna_lily`, `orange`, and `coin`
+- **Structures/environment:** all original structures plus `bush`, `oak_tree`, `palm_tree`, `pine_tree`, `baobab_tree`, `legacy_player_model`, `ranger_watchtower_variant`, and `safari_tent_variant`
+- **Characters/equipment:** `ranger_grassland`, `ranger_desert`, `ranger_snow`, `ranger_safari`, and `camera`
 
-The registry path is canonical (`models/<entity-id>.glb`). Replacement models should be centered on the origin, use +Y as up, and fit a roughly 0.5–2 world-unit footprint before any authored scale adjustment.
+Most registry paths are canonical (`models/<entity-id>.glb`). A few legacy IDs intentionally map to existing filenames, such as `willow_wren` -> `models/bird.glb`, `red_panda` -> `models/redpanda.glb`, and `polar_bear` -> `models/polarbear.glb`. Replacement models should be centered on the origin, use +Y as up, and fit a roughly 0.5–2 world-unit footprint before runtime span normalization.
 
 ### Original placeholder library
 

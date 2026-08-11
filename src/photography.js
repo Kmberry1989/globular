@@ -4,13 +4,14 @@ const CAPTURE_WIDTH = 480;
 const CAPTURE_HEIGHT = 270;
 
 export class PhotographySystem {
-  constructor({ renderer, scene, camera, wildlife, onFocusChanged }) {
+  constructor({ renderer, scene, camera, wildlife, subjects, onFocusChanged }) {
     this.renderer = renderer;
     this.scene = scene;
     this.camera = camera;
-    this.wildlife = wildlife;
+    this.subjects = subjects || wildlife;
     this.onFocusChanged = onFocusChanged;
     this.focus = null;
+    this.forcedSubjectId = null;
     this.visibleSubjects = [];
     this.aim = { x: 0, y: 0 };
     this.target = new THREE.WebGLRenderTarget(CAPTURE_WIDTH, CAPTURE_HEIGHT, {
@@ -27,6 +28,10 @@ export class PhotographySystem {
     this.aim.y = 0;
   }
 
+  forceSubject(subjectId) {
+    this.forcedSubjectId = subjectId || null;
+  }
+
   adjustAim(dx, dy) {
     this.aim.x = THREE.MathUtils.clamp(this.aim.x + dx, -1, 1);
     this.aim.y = THREE.MathUtils.clamp(this.aim.y + dy, -0.65, 0.65);
@@ -34,7 +39,8 @@ export class PhotographySystem {
 
   update(playerPosition) {
     const candidates = [];
-    for (const subject of this.wildlife) {
+    for (const subject of this.subjects) {
+      if (subject.collected || subject.root.visible === false) continue;
       subject.focus.getWorldPosition(this.worldPosition);
       const distance = this.worldPosition.distanceTo(playerPosition);
       if (distance > 11) continue;
@@ -49,7 +55,15 @@ export class PhotographySystem {
         valid: distance <= 9.5 && centerDistance <= 0.38,
       });
     }
-    candidates.sort((a, b) => a.centerDistance - b.centerDistance || a.distance - b.distance);
+    candidates.sort((a, b) => {
+      if (this.forcedSubjectId) {
+        const aId = a.subject.photoSubject?.id || a.subject.species?.id;
+        const bId = b.subject.photoSubject?.id || b.subject.species?.id;
+        if (aId === this.forcedSubjectId && bId !== this.forcedSubjectId) return -1;
+        if (bId === this.forcedSubjectId && aId !== this.forcedSubjectId) return 1;
+      }
+      return a.centerDistance - b.centerDistance || a.distance - b.distance;
+    });
     this.visibleSubjects = candidates;
     const previous = this.focus?.subject.id;
     this.focus = candidates[0] || null;

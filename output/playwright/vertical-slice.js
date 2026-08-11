@@ -54,6 +54,30 @@ const captureSpecies = async (speciesId) => {
   await advance(120);
 };
 
+const captureSubject = async (subjectId) => {
+  console.log(`capture-subject:${subjectId}:start`);
+  await closeRequestIfVisible();
+  const framedSubject = await page.evaluate((id) => window.__globularTest.frameSubject(id), subjectId);
+  assert.equal(framedSubject, true, `${subjectId}: a photo subject should exist`);
+  await advance(300);
+  await clickForce('#camera-button');
+  await advance(700);
+  const framed = await state();
+  assert.equal(framed.mode, 'camera', `${subjectId}: camera mode should open`);
+  assert.equal(framed.camera?.focus, subjectId, `${subjectId}: expected subject should be framed`);
+  assert.equal(framed.camera?.ready, true, `${subjectId}: subject should be inside the reticle`);
+  await page.waitForFunction(() => document.getElementById('photo-result').classList.contains('hidden'));
+  await clickForce('#shutter-button');
+  await page.waitForFunction(() => !document.getElementById('photo-result').classList.contains('hidden'));
+  await page.waitForFunction((id) => {
+    const snapshot = JSON.parse(window.render_game_to_text());
+    return snapshot.expedition.discoveries.includes(id) && !window.globularRoam.capturing;
+  }, subjectId);
+  await page.waitForFunction(() => document.getElementById('photo-result').classList.contains('hidden'));
+  await clickForce('#camera-close');
+  await advance(120);
+};
+
 const gatherItem = async (itemId) => {
   console.log(`gather:${itemId}:start`);
   await closeRequestIfVisible();
@@ -139,16 +163,23 @@ for (const [biomeId, speciesId, itemId] of expandedPairs) {
   await captureSpecies(speciesId);
   await gatherItem(itemId);
 }
+await page.evaluate((id) => window.__globularTest.teleportToBiome(id), 'grassland');
+await advance(160);
+await captureSubject('daisy');
+await captureSubject('oak_tree');
 const expandedWorld = await page.evaluate(() => window.__globularTest.worldCounts());
-assert.deepEqual(expandedWorld, { wildlife: 30, collectibles: 29, structures: 16 });
-assert.equal((await state()).expedition.discoveries.length, 11);
+assert.ok(expandedWorld.wildlife >= 42, 'expanded wildlife should include birds, insects, and variants');
+assert.ok(expandedWorld.collectibles >= 35, 'expanded collectibles should include plant variants');
+assert.ok(expandedWorld.structures >= 24, 'expanded structures should include tree/model variants');
+assert.equal(expandedWorld.photoSubjects, expandedWorld.wildlife + expandedWorld.collectibles + expandedWorld.structures);
+assert.equal((await state()).expedition.discoveries.length, 13);
 await page.screenshot({ path: path.join(outputDir, '04-expanded-entities.png'), fullPage: true });
 
 await clickForce('#field-guide-button');
 await page.waitForSelector('#guide-layer:not(.hidden)');
 await page.waitForTimeout(350);
-assert.equal(await page.locator('.guide-entry.found').count(), 11);
-assert.equal(await page.locator('.guide-entry.found .guide-image img').count(), 11);
+assert.equal(await page.locator('.guide-entry.found').count(), 13);
+assert.equal(await page.locator('.guide-entry.found .guide-image img').count(), 13);
 await page.screenshot({ path: path.join(outputDir, '04-field-guide.png'), fullPage: true });
 await clickForce('#guide-close');
 
@@ -173,10 +204,10 @@ await clickForce('#continue-button');
 await advance(250);
 const restored = await state();
 assert.equal(restored.expedition.complete, true);
-assert.equal(restored.expedition.discoveries.length, 11);
+assert.equal(restored.expedition.discoveries.length, 13);
 await clickForce('#field-guide-button');
 await page.waitForTimeout(300);
-assert.equal(await page.locator('.guide-entry.found .guide-image img').count(), 11);
+assert.equal(await page.locator('.guide-entry.found .guide-image img').count(), 13);
 await page.screenshot({ path: path.join(outputDir, '06-restored-guide.png'), fullPage: true });
 
 const mobileContext = await browser.newContext({

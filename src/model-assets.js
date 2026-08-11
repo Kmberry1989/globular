@@ -4,6 +4,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 const SPECIES_FILES = {
   red_panda: 'redpanda', polar_bear: 'polarbear', arctic_fox: 'fox', fennec: 'fox',
+  willow_wren: 'bird',
 };
 
 const COLLECTIBLE_FILES = {
@@ -14,16 +15,15 @@ const COLLECTIBLE_FILES = {
 const baseUrl = import.meta.env.BASE_URL;
 
 export function modelIdForSpecies(species) {
-  return SPECIES_FILES[species.id] || species.id;
+  return species.model || SPECIES_FILES[species.id] || species.id;
 }
 
 export function modelIdForCollectible(item) {
-  if (item.id === 'fallen_feather') return null;
-  return COLLECTIBLE_FILES[item.id] || item.id;
+  return item.model || COLLECTIBLE_FILES[item.id] || item.id;
 }
 
 export function modelIdForStructure(structure) {
-  return structure.id;
+  return structure.model || structure.id;
 }
 
 export class ModelLibrary {

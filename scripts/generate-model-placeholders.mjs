@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { MODEL_ASSETS } from '../src/content.js';
+import { ALL_MODEL_ASSETS } from '../src/content.js';
 
 const force = process.argv.includes('--force');
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -35,7 +35,7 @@ function makePlaceholderGlb(name) {
 
 let created = 0;
 let skipped = 0;
-for (const [id, asset] of Object.entries(MODEL_ASSETS)) {
+for (const [id, asset] of Object.entries(ALL_MODEL_ASSETS)) {
   const destination = path.join(root, asset.path);
   if (!force && fs.existsSync(destination)) { skipped += 1; continue; }
   fs.mkdirSync(path.dirname(destination), { recursive: true });
