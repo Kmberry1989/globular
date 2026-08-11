@@ -2,13 +2,15 @@
 
 ## Product
 
-Globular Roam: First Orbit is a mobile-first cozy wildlife-photography game.
-Players travel around one seamless tiny planet, photograph wildlife, gather
-natural treasures, help four rangers, fill a persistent field guide, and return
-to Clover Commons for the finale.
+Globular Roam: First Orbit is a mobile-first cozy field-guide photography game.
+Players travel around one seamless tiny planet, photograph wildlife, insects,
+plants, trees, finds, and landmarks, gather natural treasures, help four
+rangers, fill a persistent field guide, and return to Clover Commons for the
+finale.
 
-Wildlife is photographed and never collected as inventory. Fish and shoreline
-animals are field-guide subjects; there is no fishing mechanic.
+Wildlife is photographed and never collected as inventory. Plants, trees, finds,
+structures, fish, and shoreline animals are also field-guide subjects; there is
+no fishing mechanic.
 
 The current product direction is documented in `DEVELOPMENT_PLAN.md`. Deepen the
 photography and wildlife-observation loop before adding more biomes, multiplayer,
@@ -20,16 +22,25 @@ accounts, or backend systems.
 - `src/game.js` owns the Three.js scene and coordinates game systems.
 - `src/photography.js` handles camera targeting and captured image data.
 - `src/progression.js` contains pure requirement and economy rules.
-- `src/content.js` contains biome, species, request, collectible, and cosmetic
-  data.
+- `src/content.js` contains biome, photo-subject, model-registry, request,
+  collectible, structure, and cosmetic data.
 - `src/persistence.js` sanitizes/version-saves local progress and stores photos
   in IndexedDB.
 - `src/ui.js` renders and binds the start screen, HUD, camera, dialogs, field
   guide, outfitter, settings, and finale.
 - `src/styles.css` contains the responsive and reduced-motion presentation.
 
-The world currently uses an intentional procedural low-poly treatment. The
-bundled model and sprite folders are not runtime asset registries.
+The world currently uses an intentional procedural low-poly treatment with GLB
+replacement slots. Root `models/*.glb` files are active runtime assets owned by
+`MODEL_ASSETS`, `WORLD_PROP_ASSETS`, or `CHARACTER_MODEL_ASSETS`; keep new model
+paths represented in those registries and placed in `WORLD_LAYOUT` when they
+should appear in-game.
+
+`models/bird.glb` is intentionally the specific `willow_wren` model. The live
+player remains modular/procedural; `models/player.glb` is used as a legacy
+roamer mannequin/reference model rather than the controllable player. Use
+`concept-art/asset-roadmap-sheets/` and `ASSET_PROP_SHEET.md` for the current
+bird, insect, plant/tree, ranger, camera, and modular character direction.
 
 ## Gameplay invariants
 
@@ -39,7 +50,8 @@ bundled model and sprite folders are not runtime asset registries.
 - Duplicate photographs do not grant another discovery reward.
 - Gathering changes inventory and lifetime totals; selling clears inventory but
   must not erase lifetime quest progress.
-- Saves are treated as untrusted data and sanitized against known content IDs.
+- Saves are treated as untrusted data and sanitized against known photo-subject,
+  collectible, biome, and cosmetic IDs.
 - A fresh expedition clears both local progress and stored photo thumbnails.
 - Settings persist with the expedition. Reduced motion affects 3D motion and
   flashes as well as CSS animation.
@@ -90,7 +102,9 @@ Use the test-only helpers under `window.__globularTest` for state-transition
 coverage. Also preserve at least one route that uses real player input when the
 feature concerns discoverability, traversal, or controls.
 
-Browser artifacts are written under `output/playwright/first-orbit/`. The
-complete route includes desktop progression, duplicate-photo economy,
-IndexedDB thumbnails, save reload, mobile safe-area controls, settings, and
-settings persistence.
+Browser artifacts are written under `output/playwright/first-orbit/` by default.
+The checked-in asset-expansion proof run is under
+`output/playwright/asset-expansion/`. The complete route includes desktop
+progression, duplicate-photo economy, plant/tree photo capture, IndexedDB
+thumbnails, save reload, mobile safe-area controls, settings, and settings
+persistence.
