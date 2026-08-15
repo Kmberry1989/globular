@@ -78,3 +78,11 @@ Original prompt: Implement the approved “Globular Roam: First Orbit” mobile-
 - Wired the stride effect through Reduced motion and exposed compact stride state in `render_game_to_text()` for browser verification.
 - Extended the browser smoke route to assert idle, walking, camera-mode, and Reduced motion stride behavior.
 - Hardened weather selection so stale or invalid forecast indexes cannot throw during long browser smoke routes.
+
+## 2026-08-15 — object GLB import pass
+
+- Renamed all 83 `models/object*.glb` imports to descriptive runtime filenames. Existing canonical model slots now use the supplied low-poly GLBs, and no root model file still begins with `object`.
+- Added the unrepresented animal batch as optional wildlife photo subjects: rabbit, sheep, cow, chicken, deer, lizard, scorpion, snake, dolphin, aquatic turtle, walrus, moose, whale, rhino, duck, parrot, seagull, and an ostrich variant.
+- Added imported environmental prop slots for hay, clover, ferns, rocks, logs, cacti, succulents, pools, shrubs, platforms, fences, and tree variants so every renamed GLB is owned by the runtime asset registry.
+- Updated the smoke route to wait for the app/test hook and model-settled status instead of global network idle, which is too strict now that the first world load fetches many more GLBs.
+- Verified `npm run test:unit`, `npm run build`, `git diff --check`, and `GLOBULAR_ROAM_OUTPUT_DIR=output/playwright/object-glb-import npm run test:smoke`; the smoke run completed all four stamps, saved 17 field-guide photos, restored persistence, and passed mobile layout/settings checks.

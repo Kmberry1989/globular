@@ -232,6 +232,24 @@ export const SPECIES = {
   koala: { id: 'koala', name: 'Sleepy Koala', emoji: '🐨', biome: 'grassland', note: 'A soft gray tree-hugger visiting the meadow grove.', colors: [0x9fa6a8, 0xf0e8d6], form: 'koala' },
   ostrich: { id: 'ostrich', name: 'Plains Ostrich', emoji: '🐦', biome: 'safari', note: 'A tall runner with powerful legs and a long alert neck.', colors: [0x2f2c28, 0xd8c3a1], form: 'bird' },
   feline: { id: 'feline', name: 'Reed Cat', emoji: '🐈', biome: 'safari', note: 'A small spotted cat that slips quietly through the river reeds.', colors: [0xc89455, 0x513b2b], form: 'feline' },
+  rabbit: { id: 'rabbit', name: 'Meadow Rabbit', emoji: '🐇', biome: 'grassland', note: 'A long-eared hopper that pauses at the edge of the clover paths.', colors: [0x8d7968, 0xd7c4ae], form: 'hare' },
+  sheep: { id: 'sheep', name: 'Cloud Sheep', emoji: '🐑', biome: 'grassland', note: 'A woolly meadow grazer with a round cloudlike coat.', colors: [0xd9d4c9, 0x4b463f], form: 'quadruped' },
+  cow: { id: 'cow', name: 'Patchwork Cow', emoji: '🐄', biome: 'grassland', note: 'A gentle field neighbor with black-and-white markings and small horns.', colors: [0xece8dd, 0x2b2f32], form: 'quadruped' },
+  chicken: { id: 'chicken', name: 'Clover Chicken', emoji: '🐔', biome: 'grassland', note: 'A white barnyard bird that pecks quickly between the meadow flowers.', colors: [0xefeee8, 0xc83d28], form: 'bird' },
+  deer: { id: 'deer', name: 'Spotted Meadow Deer', emoji: '🦌', biome: 'grassland', note: 'A careful grazer with pale spots and small branching antlers.', colors: [0xb5773d, 0xf0dbb9], form: 'quadruped' },
+  lizard: { id: 'lizard', name: 'Painted Dune Lizard', emoji: '🦎', biome: 'desert', note: 'A bright low-bellied runner with a long tapering tail.', colors: [0xe36d38, 0x2d9b9a], form: 'gecko' },
+  scorpion: { id: 'scorpion', name: 'Shadeclaw Scorpion', emoji: '🦂', biome: 'desert', note: 'A dark desert hunter with pincers and a curled raised tail.', colors: [0x23202a, 0x6d5b47], form: 'bug' },
+  snake: { id: 'snake', name: 'Sand Ribbon Snake', emoji: '🐍', biome: 'desert', note: 'A smooth S-curve of warm sand color slipping over flat stones.', colors: [0xb4864f, 0x6c5136], form: 'snake' },
+  dolphin: { id: 'dolphin', name: 'Oasis Dolphin', emoji: '🐬', biome: 'desert', note: 'A blue arcing visitor that surfaces in the deepest oasis pocket.', colors: [0x246fbd, 0xd8edf4], form: 'fish' },
+  aquatic_turtle: { id: 'aquatic_turtle', name: 'Oasis Turtle', emoji: '🐢', biome: 'desert', note: 'A paddle-flipper turtle gliding through the shaded oasis water.', colors: [0x597b3f, 0xb0b36a], form: 'tortoise' },
+  walrus: { id: 'walrus', name: 'Tusked Walrus', emoji: '🦭', biome: 'snow', note: 'A heavy brown icebank neighbor with long ivory tusks.', colors: [0x6f4933, 0xe7d6b6], form: 'seal' },
+  moose: { id: 'moose', name: 'Paddlehorn Moose', emoji: '🫎', biome: 'snow', note: 'A tall dark wanderer with broad antlers that read from far away.', colors: [0x3c2f29, 0xa88755], form: 'quadruped' },
+  whale: { id: 'whale', name: 'Blue Ice Whale', emoji: '🐋', biome: 'snow', note: 'A huge blue shape seen breaching beyond the Frostcap ice.', colors: [0x1f5ea8, 0xd5e6ee], form: 'fish' },
+  rhino: { id: 'rhino', name: 'Stonehide Rhino', emoji: '🦏', biome: 'safari', note: 'A sturdy grey browser with a strong front horn and heavy stance.', colors: [0x656a6d, 0x393d40], form: 'quadruped' },
+  duck: { id: 'duck', name: 'River Mallard', emoji: '🦆', biome: 'safari', note: 'A green-headed duck that bobs at the watering hollow.', colors: [0x2b6a3f, 0x8a5a35], form: 'bird' },
+  parrot: { id: 'parrot', name: 'Canopy Parrot', emoji: '🦜', biome: 'safari', note: 'A bright red-and-blue perch bird with a bold hooked beak.', colors: [0xc7332f, 0x2f67b7], form: 'bird' },
+  seagull: { id: 'seagull', name: 'River Gull', emoji: '🐦', biome: 'safari', note: 'A pale water-edge bird with grey wings and a yellow beak.', colors: [0xe8e5dc, 0x626870], form: 'bird' },
+  ostrich_variant: { id: 'ostrich_variant', name: 'Greytail Ostrich', emoji: '🐦', biome: 'safari', note: 'A second ostrich silhouette with softer grey tail feathers.', colors: [0x262422, 0xd7c1a3], form: 'bird' },
 };
 
 export const COLLECTIBLES = {
@@ -308,6 +326,23 @@ export const STRUCTURES = {
   pine_tree: { id: 'pine_tree', name: 'Frost Pine', biome: 'snow', color: 0x7eb2a9, accent: 0x6d5745, form: 'tree', note: 'A conical evergreen with snow-dusted layered branches.' },
   baobab_tree: { id: 'baobab_tree', name: 'Riverland Baobab', biome: 'safari', color: 0x8f9046, accent: 0x8b6138, form: 'tree', note: 'A thick-trunked savanna tree with a flattened leafy crown.' },
   legacy_player_model: { id: 'legacy_player_model', name: 'Legacy Roamer Mannequin', biome: 'safari', color: 0x4b91c7, accent: 0xd8b48a, form: 'statue', model: 'player', note: 'The old single-piece player model is now a reference mannequin while the live player moves to modular parts.' },
+  hay_bale: { id: 'hay_bale', name: 'Meadow Hay Bale', biome: 'grassland', color: 0xb28b38, accent: 0x6b5127, form: 'prop', note: 'A low rectangular straw bale used for cozy meadow dressing.' },
+  clover_patch: { id: 'clover_patch', name: 'Dense Clover Patch', biome: 'grassland', color: 0x496b38, accent: 0x8baf63, form: 'bush', note: 'A low patch of clustered clover leaves for ground-level photos.' },
+  fern_cluster: { id: 'fern_cluster', name: 'Fern Cluster', biome: 'grassland', color: 0x3f6b3d, accent: 0x7fa36d, form: 'bush', note: 'A dense cluster of low leafy ferns tucked beside the trail.' },
+  mossy_rocks: { id: 'mossy_rocks', name: 'Mossy Rocks', biome: 'grassland', color: 0x627052, accent: 0x3d5e36, form: 'rock', note: 'A low rock group softened by green moss.' },
+  fallen_log: { id: 'fallen_log', name: 'Fallen Meadow Log', biome: 'grassland', color: 0x6f4b32, accent: 0x3a261c, form: 'prop', note: 'A grounded branch pile that adds natural trail cover.' },
+  barrel_cactus: { id: 'barrel_cactus', name: 'Barrel Cactus', biome: 'desert', color: 0x2f6f42, accent: 0xb8a16c, form: 'cactus', note: 'A rounded ribbed cactus with visible thorn detail.' },
+  succulent_cluster: { id: 'succulent_cluster', name: 'Succulent Cluster', biome: 'desert', color: 0x2d7c45, accent: 0x78a36c, form: 'bush', note: 'A compact desert succulent cluster for low dry-ground dressing.' },
+  dry_grass_patch: { id: 'dry_grass_patch', name: 'Dry Grass Patch', biome: 'desert', color: 0xa68a42, accent: 0x5a4b2b, form: 'grass', note: 'A straw-colored patch of hardy desert grass.' },
+  wooden_fence: { id: 'wooden_fence', name: 'Weathered Fence', biome: 'desert', color: 0x8d7048, accent: 0x57412b, form: 'fence', note: 'A simple rail fence marking an old safe route.' },
+  oasis_pool: { id: 'oasis_pool', name: 'Oasis Pool', biome: 'desert', color: 0x1f6f83, accent: 0x9fd4d6, form: 'water', note: 'A shallow blue oasis pool that anchors water-edge wildlife.' },
+  desert_shrub: { id: 'desert_shrub', name: 'Desert Shrub', biome: 'desert', color: 0x596341, accent: 0x9c9060, form: 'bush', note: 'A low dry shrub shaped for readability on sand.' },
+  frost_rock_cluster: { id: 'frost_rock_cluster', name: 'Frost Rock Cluster', biome: 'snow', color: 0x8ca6b5, accent: 0xd8e7ed, form: 'rock', note: 'A cool blue-grey rock group for snowfield dressing.' },
+  shadow_pool: { id: 'shadow_pool', name: 'Shadowed Ice Pool', biome: 'snow', color: 0x263646, accent: 0x6fa6bc, form: 'water', note: 'A thin dark meltwater pool that reads against pale snow.' },
+  snow_pine_tree: { id: 'snow_pine_tree', name: 'Snow Pine Variant', biome: 'snow', color: 0x6d978d, accent: 0xe6f0ef, form: 'tree', note: 'A smaller snow-dusted pine variant for colder paths.' },
+  acacia_tree: { id: 'acacia_tree', name: 'Flat-top Acacia', biome: 'safari', color: 0x335c3e, accent: 0x6a432b, form: 'tree', note: 'A flat-canopy savanna tree with a compact readable trunk.' },
+  wooden_platform: { id: 'wooden_platform', name: 'Ranger Platform', biome: 'safari', color: 0x7b5632, accent: 0x4a3525, form: 'platform', note: 'A low wooden ranger platform for camp-edge dressing.' },
+  young_palm_tree: { id: 'young_palm_tree', name: 'Young Palm', biome: 'safari', color: 0x4f7d41, accent: 0x7a5832, form: 'tree', note: 'A shorter palm silhouette for layering around river paths.' },
 };
 
 const MODEL_FILE_OVERRIDES = {
@@ -319,7 +354,6 @@ const MODEL_FILE_OVERRIDES = {
   starflower: 'flower',
   sunpetal: 'flower',
   snowdrop: 'flower',
-  smooth_stone: 'painted_stone',
   ice_glass: 'ice_patch',
   seed_pod: 'baobab_pod',
 };
@@ -399,24 +433,24 @@ export const PHOTO_SUBJECTS = {
 
 export const WORLD_LAYOUT = {
   grassland: {
-    wildlife: [['butterfly', -0.055, -0.045], ['ladybug', 0.075, 0.025], ['red_panda', 0.14, -0.06], ['hedgehog', -0.18, 0.1], ['songbird', -0.24, -0.08], ['frog', 0.205, 0.085], ['squirrel', 0.255, -0.02], ['willow_wren', -0.305, -0.125], ['cardinal', -0.33, 0.025], ['blue_jay', 0.325, 0.075], ['ruby_throated_hummingbird', 0.32, -0.105], ['firefly', -0.16, -0.125], ['bumblebee', 0.17, 0.145], ['koala', 0.03, 0.145]],
+    wildlife: [['butterfly', -0.055, -0.045], ['ladybug', 0.075, 0.025], ['red_panda', 0.14, -0.06], ['hedgehog', -0.18, 0.1], ['songbird', -0.24, -0.08], ['frog', 0.205, 0.085], ['squirrel', 0.255, -0.02], ['willow_wren', -0.305, -0.125], ['cardinal', -0.33, 0.025], ['blue_jay', 0.325, 0.075], ['ruby_throated_hummingbird', 0.32, -0.105], ['firefly', -0.16, -0.125], ['bumblebee', 0.17, 0.145], ['koala', 0.03, 0.145], ['rabbit', -0.37, 0.035], ['sheep', -0.08, 0.145], ['cow', 0.105, -0.145], ['chicken', 0.37, 0.015], ['deer', 0.37, -0.125]],
     collectibles: [['starflower', -0.025, 0.02], ['starflower', 0.055, -0.025], ['starflower', 0.125, 0.07], ['apple', -0.12, 0.06], ['clover_mushroom', -0.2, -0.03], ['acorn', 0.19, -0.11], ['dewberry', 0.235, 0.12], ['wild_mint', -0.27, 0.03], ['daisy', -0.34, 0.11], ['bluebell', -0.31, -0.125], ['red_clover', -0.245, 0.135], ['black_eyed_susan', 0.295, -0.055], ['lavender_spike', 0.325, 0.125]],
-    structures: [['windmill', -0.29, 0.13], ['stone_bridge', -0.12, -0.14], ['birdhouse', 0.28, 0.14], ['picnic_shelter', 0.22, -0.14], ['bush', -0.335, -0.055], ['oak_tree', 0.335, -0.15]],
+    structures: [['windmill', -0.29, 0.13], ['stone_bridge', -0.12, -0.14], ['birdhouse', 0.28, 0.14], ['picnic_shelter', 0.22, -0.14], ['bush', -0.335, -0.055], ['oak_tree', 0.335, -0.15], ['hay_bale', 0.13, 0.16], ['clover_patch', -0.37, -0.02], ['fern_cluster', -0.02, -0.16], ['mossy_rocks', 0.24, 0.03], ['fallen_log', -0.245, -0.16]],
   },
   desert: {
-    wildlife: [['camel', -0.045, -0.025], ['fennec', 0.085, 0.05], ['fish', 0.14, -0.075], ['meerkat', -0.19, 0.09], ['desert_tortoise', -0.25, -0.05], ['roadrunner', 0.21, 0.1], ['gecko', 0.27, -0.02], ['red_tailed_hawk', -0.315, -0.115], ['dragonfly', 0.32, 0.105]],
+    wildlife: [['camel', -0.045, -0.025], ['fennec', 0.085, 0.05], ['fish', 0.14, -0.075], ['meerkat', -0.19, 0.09], ['desert_tortoise', -0.25, -0.05], ['roadrunner', 0.21, 0.1], ['gecko', 0.27, -0.02], ['red_tailed_hawk', -0.315, -0.115], ['dragonfly', 0.32, 0.105], ['lizard', -0.365, 0.055], ['scorpion', -0.35, -0.055], ['snake', 0.365, -0.025], ['dolphin', 0.03, -0.145], ['aquatic_turtle', 0.36, 0.12]],
     collectibles: [['sunpetal', 0.025, 0.035], ['sunpetal', 0.13, 0.08], ['smooth_stone', -0.1, -0.06], ['cactus_fruit', -0.2, 0.02], ['desert_pearl', 0.205, -0.11], ['amber_shard', 0.245, 0.12], ['date_cluster', -0.26, 0.1], ['desert_marigold', -0.335, 0.025], ['coin', 0.335, -0.06], ['prickly_pear_blossom', -0.315, -0.13], ['desert_lupine', -0.235, 0.135], ['evening_primrose', 0.285, 0.02], ['firecracker_penstemon', 0.33, 0.13]],
-    structures: [['oasis_well', -0.3, 0.14], ['sandstone_ruins', -0.12, -0.14], ['desert_tent', 0.28, 0.13], ['wind_tower', 0.23, -0.14], ['palm_tree', 0.335, 0.02]],
+    structures: [['oasis_well', -0.3, 0.14], ['sandstone_ruins', -0.12, -0.14], ['desert_tent', 0.28, 0.13], ['wind_tower', 0.23, -0.14], ['palm_tree', 0.335, 0.02], ['barrel_cactus', -0.37, 0.13], ['succulent_cluster', -0.16, 0.16], ['dry_grass_patch', 0.05, 0.16], ['wooden_fence', 0.36, -0.13], ['oasis_pool', 0.16, -0.15], ['desert_shrub', -0.245, -0.145]],
   },
   snow: {
-    wildlife: [['penguin', -0.045, 0.04], ['polar_bear', 0.085, -0.035], ['arctic_fox', 0.145, 0.065], ['seal', -0.2, 0.1], ['snowy_owl', -0.27, -0.06], ['snowy_owl_variant', -0.335, 0.13], ['arctic_hare', 0.2, 0.11], ['musk_ox', 0.26, -0.025], ['bald_eagle', -0.325, -0.12], ['stag_beetle', 0.325, 0.075]],
+    wildlife: [['penguin', -0.045, 0.04], ['polar_bear', 0.085, -0.035], ['arctic_fox', 0.145, 0.065], ['seal', -0.2, 0.1], ['snowy_owl', -0.27, -0.06], ['snowy_owl_variant', -0.335, 0.13], ['arctic_hare', 0.2, 0.11], ['musk_ox', 0.26, -0.025], ['bald_eagle', -0.325, -0.12], ['stag_beetle', 0.325, 0.075], ['walrus', -0.365, 0.025], ['moose', 0.365, -0.055], ['whale', -0.095, -0.145]],
     collectibles: [['snowdrop', 0.02, -0.035], ['ice_glass', -0.11, 0.06], ['ice_glass', 0.14, -0.06], ['frostberry', -0.2, 0.01], ['pinecone', 0.21, -0.1], ['aurora_shell', 0.24, 0.12], ['snow_crystal', -0.27, 0.1], ['arctic_poppy', 0.335, -0.045], ['edelweiss', -0.335, -0.11], ['alpine_forget_me_not', -0.235, 0.135], ['glacier_lily', 0.295, 0.1], ['purple_saxifrage', 0.325, -0.135]],
-    structures: [['igloo', -0.3, 0.14], ['ice_bridge', -0.12, -0.14], ['ranger_watchtower', 0.28, 0.13], ['ranger_watchtower_variant', 0.335, -0.13], ['sled_station', 0.22, -0.14], ['pine_tree', -0.335, 0.025]],
+    structures: [['igloo', -0.3, 0.14], ['ice_bridge', -0.12, -0.14], ['ranger_watchtower', 0.28, 0.13], ['ranger_watchtower_variant', 0.335, -0.13], ['sled_station', 0.22, -0.14], ['pine_tree', -0.335, 0.025], ['frost_rock_cluster', -0.37, -0.095], ['shadow_pool', 0.11, -0.155], ['snow_pine_tree', 0.37, 0.11]],
   },
   safari: {
-    wildlife: [['zebra', -0.07, 0.02], ['giraffe', 0.025, -0.045], ['elephant', 0.105, 0.045], ['flamingo', 0.17, -0.07], ['crab', -0.15, -0.07], ['lion', -0.26, 0.1], ['lion_variant', -0.335, 0.14], ['hippo', -0.22, -0.12], ['warthog', 0.23, 0.12], ['hornbill', 0.28, -0.01], ['ostrich', -0.335, -0.12], ['monkey', 0.335, 0.04], ['feline', 0.05, 0.145], ['grasshopper', -0.06, -0.145]],
+    wildlife: [['zebra', -0.07, 0.02], ['giraffe', 0.025, -0.045], ['elephant', 0.105, 0.045], ['flamingo', 0.17, -0.07], ['crab', -0.15, -0.07], ['lion', -0.26, 0.1], ['lion_variant', -0.335, 0.14], ['hippo', -0.22, -0.12], ['warthog', 0.23, 0.12], ['hornbill', 0.28, -0.01], ['ostrich', -0.335, -0.12], ['monkey', 0.335, 0.04], ['feline', 0.05, 0.145], ['grasshopper', -0.06, -0.145], ['rhino', -0.365, 0.015], ['duck', 0.365, -0.045], ['parrot', 0.365, 0.12], ['seagull', 0.12, -0.15], ['ostrich_variant', -0.365, -0.135]],
     collectibles: [['fallen_feather', -0.025, -0.025], ['fallen_feather', 0.14, 0.07], ['seed_pod', 0.055, 0.055], ['baobab_pod', -0.2, 0.01], ['amber_bead', 0.21, -0.1], ['river_reed', 0.245, 0.12], ['painted_stone', -0.27, 0.1], ['savanna_lily', -0.335, 0.02], ['orange', 0.335, -0.085], ['flame_lily', -0.315, -0.125], ['bird_of_paradise_flower', -0.225, 0.135], ['aloe_bloom', 0.285, 0.11], ['acacia_blossom', 0.33, -0.02]],
-    structures: [['lookout_tower', -0.3, 0.14], ['water_trough', -0.12, -0.14], ['rope_bridge', 0.28, 0.13], ['safari_tent', 0.22, -0.14], ['safari_tent_variant', 0.335, -0.135], ['baobab_tree', -0.335, 0.115], ['legacy_player_model', -0.335, -0.145]],
+    structures: [['lookout_tower', -0.3, 0.14], ['water_trough', -0.12, -0.14], ['rope_bridge', 0.28, 0.13], ['safari_tent', 0.22, -0.14], ['safari_tent_variant', 0.335, -0.135], ['baobab_tree', -0.335, 0.115], ['legacy_player_model', -0.335, -0.145], ['acacia_tree', -0.37, 0.045], ['wooden_platform', 0.37, 0.0], ['young_palm_tree', 0.16, 0.15]],
   },
 };
 

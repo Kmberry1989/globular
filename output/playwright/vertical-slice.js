@@ -92,13 +92,12 @@ const gatherItem = async (itemId) => {
   await advance(140);
 };
 
-await page.goto(baseUrl, { waitUntil: 'networkidle' });
+await page.goto(baseUrl, { waitUntil: 'domcontentloaded' });
 await page.evaluate(() => {
   localStorage.clear();
   indexedDB.deleteDatabase('globular_roam_photos');
 });
-await page.reload({ waitUntil: 'networkidle' });
-await page.waitForLoadState('networkidle');
+await page.reload({ waitUntil: 'domcontentloaded' });
 await page.waitForFunction(() => typeof window.render_game_to_text === 'function');
 const modelStatus = await page.evaluate(() => window.__globularTest.waitForModels());
 assert.equal(modelStatus.failed.length, 0, `GLB loads should succeed: ${modelStatus.failed.join(', ')}`);
@@ -190,9 +189,9 @@ await page.evaluate((id) => window.__globularTest.teleportToBiome(id), 'safari')
 await advance(160);
 await captureSubject('flame_lily');
 const expandedWorld = await page.evaluate(() => window.__globularTest.worldCounts());
-assert.ok(expandedWorld.wildlife >= 42, 'expanded wildlife should include birds, insects, and variants');
+assert.ok(expandedWorld.wildlife >= 60, 'expanded wildlife should include imported animal GLBs');
 assert.ok(expandedWorld.collectibles >= 51, 'expanded collectibles should include flower and plant variants');
-assert.ok(expandedWorld.structures >= 24, 'expanded structures should include tree/model variants');
+assert.ok(expandedWorld.structures >= 40, 'expanded structures should include imported prop GLBs');
 assert.equal(expandedWorld.photoSubjects, expandedWorld.wildlife + expandedWorld.collectibles + expandedWorld.structures);
 assert.equal((await state()).expedition.discoveries.length, 17);
 await page.screenshot({ path: path.join(outputDir, '04-expanded-entities.png'), fullPage: true });
@@ -221,7 +220,8 @@ assert.equal((await state()).expedition.complete, true);
 await page.waitForTimeout(800);
 await page.screenshot({ path: path.join(outputDir, '05-finale.png'), fullPage: true });
 
-await page.reload({ waitUntil: 'networkidle' });
+await page.reload({ waitUntil: 'domcontentloaded' });
+await page.waitForSelector('#continue-button');
 await clickForce('#continue-button');
 await advance(250);
 const restored = await state();
@@ -243,7 +243,8 @@ mobilePage.on('console', (message) => {
   if (message.type() === 'error') errors.push(`mobile console: ${message.text()}`);
 });
 mobilePage.on('pageerror', (error) => errors.push(`mobile page: ${error.message}`));
-await mobilePage.goto(baseUrl, { waitUntil: 'networkidle' });
+await mobilePage.goto(baseUrl, { waitUntil: 'domcontentloaded' });
+await mobilePage.waitForSelector('#start-button');
 await mobilePage.locator('#start-button').evaluate((element) => element.click());
 await mobilePage.waitForSelector('#modal-layer:not(.hidden)');
 await mobilePage.locator('#modal-action').evaluate((element) => element.click());
@@ -310,7 +311,8 @@ await mobilePage.keyboard.up('w');
 const reducedMotionWalking = JSON.parse(await mobilePage.evaluate(() => window.render_game_to_text()));
 assert.equal(reducedMotionWalking.view.stride.active, false, 'reduced motion should disable walking stride');
 assert.equal(reducedMotionWalking.view.stride.intensity, 0, 'reduced motion should report zero stride intensity');
-await mobilePage.reload({ waitUntil: 'networkidle' });
+await mobilePage.reload({ waitUntil: 'domcontentloaded' });
+await mobilePage.waitForSelector('#continue-button');
 await mobilePage.locator('#continue-button').evaluate((element) => element.click());
 await mobilePage.waitForTimeout(150);
 const restoredMobileSettings = JSON.parse(await mobilePage.evaluate(() => window.render_game_to_text()));

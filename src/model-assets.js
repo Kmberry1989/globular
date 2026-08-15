@@ -8,7 +8,7 @@ const SPECIES_FILES = {
 };
 
 const COLLECTIBLE_FILES = {
-  starflower: 'flower', sunpetal: 'flower', snowdrop: 'flower', smooth_stone: 'painted_stone',
+  starflower: 'flower', sunpetal: 'flower', snowdrop: 'flower',
   ice_glass: 'ice_patch', seed_pod: 'baobab_pod',
 };
 
