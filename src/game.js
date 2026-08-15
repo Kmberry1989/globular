@@ -34,6 +34,11 @@ const FIRST_PERSON_EYE = new THREE.Vector3(0, 1.55, -0.48);
 const FIRST_PERSON_LOOK = new THREE.Vector3(0, 0.12, 7.1);
 const FIRST_PERSON_CAMERA_EYE = new THREE.Vector3(0, 1.5, -0.34);
 const FIRST_PERSON_CAMERA_LOOK = new THREE.Vector3(0, 0, 7.6);
+const STRIDE_BOB_HEIGHT = 0.035;
+const STRIDE_SWAY_WIDTH = 0.018;
+const STRIDE_FORWARD_SHIFT = 0.012;
+const STRIDE_ROLL = 0.006;
+const STRIDE_RATE = 8;
 
 const MODEL_SPANS = {
   butterfly: 0.55, ladybug: 0.26, red_panda: 0.9, hedgehog: 0.55, songbird: 0.65, frog: 0.45, squirrel: 0.7,
@@ -563,6 +568,9 @@ export class GlobularRoamGame {
     this.rangers = [];
     this.lastFrame = performance.now();
     this.manualStepping = false;
+    this.walkPhase = 0;
+    this.walkIntensity = 0;
+    this.walkInputStrength = 0;
     this.audioContext = null;
     this.cameraAudio = new Audio(cameraSoundUrl);
     this.cameraAudio.preload = 'auto';
@@ -878,6 +886,8 @@ export class GlobularRoamGame {
     this.photography.resetAim();
     this.camera.fov = 50;
     this.camera.updateProjectionMatrix();
+    this.walkInputStrength = 0;
+    this.walkIntensity = 0;
     this.syncPlayerViewVisibility();
     this.alignForcedCameraAim();
     this.ui.setCameraMode(true);
@@ -1123,18 +1133,23 @@ export class GlobularRoamGame {
     if (this.keys.has('w') || this.keys.has('arrowup')) y += 1;
     if (this.keys.has('s') || this.keys.has('arrowdown')) y -= 1;
     const length = Math.hypot(x, y);
+    const movementStrength = Math.min(length, 1);
     if (length > 1) { x /= length; y /= length; }
+    const targetIntensity = this.save.settings.reducedMotion ? 0 : movementStrength;
+    this.walkInputStrength = movementStrength;
+    this.walkIntensity = THREE.MathUtils.lerp(this.walkIntensity, targetIntensity, targetIntensity > this.walkIntensity ? 0.18 : 0.24);
     if (Math.abs(x) + Math.abs(y) < 0.02) {
       this.player.position.y = THREE.MathUtils.lerp(this.player.position.y, 0, 0.15);
       return;
+    }
+    if (!this.save.settings.reducedMotion) {
+      this.walkPhase += delta * STRIDE_RATE * (0.75 + movementStrength * 0.25);
     }
     this.save.longitude = normalizeLongitude(this.save.longitude + x * MOVE_SPEED * delta);
     this.save.latitude = THREE.MathUtils.clamp(this.save.latitude + y * MOVE_SPEED * delta, -LATITUDE_LIMIT, LATITUDE_LIMIT);
     this.updateGlobeOrientation();
     this.player.rotation.y = THREE.MathUtils.lerp(this.player.rotation.y, Math.atan2(x, y), 0.14);
-    this.player.position.y = this.save.settings.reducedMotion
-      ? 0
-      : Math.abs(Math.sin(this.elapsed * 8)) * 0.1;
+    this.player.position.y = THREE.MathUtils.lerp(this.player.position.y, 0, 0.2);
     this.saveDirty = true;
   }
 
@@ -1187,12 +1202,24 @@ export class GlobularRoamGame {
       const target = FIRST_PERSON_CAMERA_LOOK.clone();
       target.x += this.photography.aim.x * 4.8;
       target.y += this.photography.aim.y * 3.2;
+      this.walkInputStrength = 0;
+      this.walkIntensity = THREE.MathUtils.lerp(this.walkIntensity, 0, 0.35);
       this.camera.position.lerp(FIRST_PERSON_CAMERA_EYE, 0.32);
       this.camera.lookAt(target);
       this.photography.update(PLAYER_POSITION);
     } else {
-      this.camera.position.lerp(FIRST_PERSON_EYE, 0.22);
-      this.camera.lookAt(FIRST_PERSON_LOOK);
+      const stride = this.save.settings.reducedMotion ? 0 : this.walkIntensity;
+      const phase = this.walkPhase;
+      const eye = FIRST_PERSON_EYE.clone();
+      eye.x += Math.sin(phase) * STRIDE_SWAY_WIDTH * stride;
+      eye.y += Math.abs(Math.sin(phase * 2)) * STRIDE_BOB_HEIGHT * stride;
+      eye.z += Math.cos(phase * 2) * STRIDE_FORWARD_SHIFT * stride;
+      const look = FIRST_PERSON_LOOK.clone();
+      look.x += Math.sin(phase) * STRIDE_SWAY_WIDTH * 0.45 * stride;
+      look.y += Math.sin(phase * 2) * STRIDE_BOB_HEIGHT * 0.22 * stride;
+      this.camera.position.lerp(eye, 0.22);
+      this.camera.lookAt(look);
+      this.camera.rotation.z += Math.sin(phase) * STRIDE_ROLL * stride;
     }
   }
 
@@ -1227,9 +1254,11 @@ export class GlobularRoamGame {
     const nightSky = new THREE.Color(0x24314a);
     const targetSky = nightSky.clone().lerp(biomeSky, daylight);
     const forecast = WEATHER[this.currentBiome] || WEATHER.grassland;
-    const weather = forecast[this.weatherOverride?.biomeId === this.currentBiome
-      ? this.weatherOverride.index % forecast.length
-      : Math.floor(this.elapsed / 32) % forecast.length];
+    const overrideActive = this.weatherOverride?.biomeId === this.currentBiome
+      && Number.isInteger(this.weatherOverride.index);
+    const rawWeatherIndex = overrideActive ? this.weatherOverride.index : Math.floor(this.elapsed / 32);
+    const weatherIndex = ((rawWeatherIndex % forecast.length) + forecast.length) % forecast.length;
+    const weather = forecast[weatherIndex] || forecast[0] || WEATHER.grassland[0];
     const weatherTint = new THREE.Color(weather.tint);
     targetSky.lerp(weatherTint, weather.kind === 'none' ? 0.03 : 0.14);
     this.scene.background.lerp(targetSky, 0.025);
@@ -1383,6 +1412,10 @@ export class GlobularRoamGame {
           z: Number(this.camera.position.z.toFixed(2)),
         },
         playerBodyVisible: Boolean(this.player?.visible),
+        stride: {
+          active: this.mode === 'roaming' && !this.save.settings.reducedMotion && this.walkIntensity > 0.05,
+          intensity: Number((this.save.settings.reducedMotion ? 0 : this.walkIntensity).toFixed(2)),
+        },
       },
       expedition: {
         chapter: currentChapter(this.save.stamps),

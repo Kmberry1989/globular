@@ -68,6 +68,13 @@ Original prompt: Implement the approved “Globular Roam: First Orbit” mobile-
 
 - Added 16 more named, identifiable flower photo subjects and gatherables: `bluebell`, `red_clover`, `black_eyed_susan`, `lavender_spike`, `prickly_pear_blossom`, `desert_lupine`, `evening_primrose`, `firecracker_penstemon`, `edelweiss`, `alpine_forget_me_not`, `glacier_lily`, `purple_saxifrage`, `flame_lily`, `bird_of_paradise_flower`, `aloe_bloom`, and `acacia_blossom`.
 - Placed the new flowers across grassland, desert, snow, and safari without changing First Orbit stamp requirements.
-- Added per-flower model spans, generated canonical missing `models/<flower-id>.glb` placeholders, and added `flower-expansion-sheet.svg` as the modeling reference map.
+- Added per-flower model spans, generated canonical missing `models/<flower-id>.glb` placeholders, and added `flower-expansion-sheet.png` as the modeling reference map.
 - Extended content tests and the browser smoke route to prove one new flower photo from each biome saves into the field guide.
 - Updated the model loader so generated triangle placeholders reserve canonical GLB slots without replacing the clearer procedural fallback visuals.
+
+## 2026-08-13 — first-person walking stride pass
+
+- Added subtle camera-space walking bob, lateral sway, forward micro-shift, and roll while roaming; camera/photo mode remains steady for framing.
+- Wired the stride effect through Reduced motion and exposed compact stride state in `render_game_to_text()` for browser verification.
+- Extended the browser smoke route to assert idle, walking, camera-mode, and Reduced motion stride behavior.
+- Hardened weather selection so stale or invalid forecast indexes cannot throw during long browser smoke routes.

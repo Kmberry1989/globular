@@ -176,6 +176,7 @@ button { color: inherit; }
   .round-action { width: 76px; height: 76px; }
   .context-action { width: 64px; height: 64px; }
   .joystick-base { width: 106px; height: 106px; }
+  .toast { bottom: max(206px, calc(env(safe-area-inset-bottom) + 206px)); max-width: calc(100vw - 58px); border-radius: 18px; }
   .guide-card, .outfitter-card, .settings-card { padding: 18px; max-height: 92vh; }
   .guide-card header, .outfitter-card header, .settings-card header { top: -18px; margin: -18px -18px 14px; padding: 18px 18px 10px; }
   .guide-grid { grid-template-columns: 1fr; }

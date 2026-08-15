@@ -39,6 +39,7 @@ const captureSpecies = async (speciesId) => {
   const framed = await state();
   console.log(`capture:${speciesId}:framed`, framed.camera);
   assert.equal(framed.mode, 'camera', `${speciesId}: camera mode should open`);
+  assert.equal(framed.view.stride.active, false, `${speciesId}: camera mode should not use walking stride`);
   assert.equal(framed.camera?.focus, speciesId, `${speciesId}: expected subject should be framed`);
   assert.equal(framed.camera?.ready, true, `${speciesId}: subject should be inside the reticle`);
   await page.waitForFunction(() => document.getElementById('photo-result').classList.contains('hidden'));
@@ -64,6 +65,7 @@ const captureSubject = async (subjectId) => {
   await advance(700);
   const framed = await state();
   assert.equal(framed.mode, 'camera', `${subjectId}: camera mode should open`);
+  assert.equal(framed.view.stride.active, false, `${subjectId}: camera mode should not use walking stride`);
   assert.equal(framed.camera?.focus, subjectId, `${subjectId}: expected subject should be framed`);
   assert.equal(framed.camera?.ready, true, `${subjectId}: subject should be inside the reticle`);
   await page.waitForFunction(() => document.getElementById('photo-result').classList.contains('hidden'));
@@ -113,8 +115,18 @@ const opening = await state();
 assert.equal(opening.mode, 'roaming');
 assert.equal(opening.expedition.chapter, 'grassland');
 assert.equal(opening.visibleWildlife.some((entry) => entry.id === 'butterfly'), true);
+assert.equal(opening.view.stride.active, false, 'idle roaming should not activate first-person stride');
+const idleCameraY = opening.view.cameraPosition.y;
+await page.keyboard.down('w');
+await advance(900);
+await page.keyboard.up('w');
+const walking = await state();
+assert.equal(walking.mode, 'roaming');
+assert.equal(walking.view.stride.active, true, 'walking should activate first-person stride');
+assert.ok(Math.abs(walking.view.cameraPosition.y - idleCameraY) > 0.005, 'walking stride should subtly move the first-person camera');
 
 await captureSpecies('butterfly');
+assert.equal((await state()).view.stride.active, false, 'camera mode and photo flow should settle stride before returning to roaming');
 const bellsAfterFirstPhoto = (await state()).bells;
 await captureSpecies('butterfly');
 assert.equal((await state()).bells, bellsAfterFirstPhoto, 'duplicate photographs must not award bells');
@@ -239,6 +251,21 @@ await mobilePage.waitForTimeout(250);
 assert.equal(await mobilePage.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), true);
 assert.equal(await mobilePage.locator('#joystick-base').isVisible(), true);
 assert.equal(await mobilePage.locator('#camera-button').isVisible(), true);
+await mobilePage.evaluate(() => window.globularRoam.ui.toastMessage('Mobile roaming layout check'));
+await mobilePage.waitForSelector('#toast:not(.hidden)');
+const roamingToastBox = await mobilePage.locator('#toast:not(.hidden)').boundingBox();
+const roamingContextBox = await mobilePage.locator('#context-button').boundingBox();
+const roamingCameraBox = await mobilePage.locator('#camera-button').boundingBox();
+const roamingUtilityBox = await mobilePage.locator('.utility-nav').boundingBox();
+const boxOverlaps = (first, second) => Boolean(first
+  && second
+  && first.x < second.x + second.width
+  && first.x + first.width > second.x
+  && first.y < second.y + second.height
+  && first.y + first.height > second.y);
+assert.equal(boxOverlaps(roamingToastBox, roamingContextBox), false, 'mobile roaming toast must not cover context action');
+assert.equal(boxOverlaps(roamingToastBox, roamingCameraBox), false, 'mobile roaming toast must not cover camera action');
+assert.equal(boxOverlaps(roamingToastBox, roamingUtilityBox), false, 'mobile roaming toast must not cover utility actions');
 await mobilePage.screenshot({ path: path.join(outputDir, '07-mobile-roaming.png'), fullPage: true });
 const cameraBox = await mobilePage.locator('#camera-button').boundingBox();
 await mobilePage.touchscreen.tap(cameraBox.x + cameraBox.width / 2, cameraBox.y + cameraBox.height / 2);
@@ -275,6 +302,14 @@ assert.equal(await mobilePage.locator('#sound-setting').getAttribute('aria-check
 assert.equal(await mobilePage.locator('#motion-setting').getAttribute('aria-checked'), 'true');
 assert.equal(await mobilePage.evaluate(() => document.documentElement.classList.contains('reduced-motion')), true);
 await mobilePage.screenshot({ path: path.join(outputDir, '09-mobile-settings.png'), fullPage: true });
+await mobilePage.locator('#settings-close').evaluate((element) => element.click());
+await mobilePage.waitForFunction(() => document.getElementById('settings-layer').classList.contains('hidden'));
+await mobilePage.keyboard.down('w');
+await mobilePage.evaluate((ms) => window.advanceTime(ms), 700);
+await mobilePage.keyboard.up('w');
+const reducedMotionWalking = JSON.parse(await mobilePage.evaluate(() => window.render_game_to_text()));
+assert.equal(reducedMotionWalking.view.stride.active, false, 'reduced motion should disable walking stride');
+assert.equal(reducedMotionWalking.view.stride.intensity, 0, 'reduced motion should report zero stride intensity');
 await mobilePage.reload({ waitUntil: 'networkidle' });
 await mobilePage.locator('#continue-button').evaluate((element) => element.click());
 await mobilePage.waitForTimeout(150);

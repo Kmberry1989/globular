@@ -46,7 +46,7 @@ Left-to-right, top-to-bottom:
 
 ## Flower Expansion Sheet
 
-File: `flower-expansion-sheet.svg`
+File: `flower-expansion-sheet.png`
 
 Left-to-right, top-to-bottom:
 
